@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>英语每日 30 分钟 · 托福精听</title>
+<style>
+  :root{
+    --bg:#0f1420; --card:#1a2233; --card2:#222d44; --line:#2e3a55;
+    --txt:#eef2fa; --dim:#9fb0cc; --acc:#4da3ff; --acc2:#37d99a; --warn:#ffb84d; --bad:#ff6b6b;
+    --radius:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--bg); color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+    padding:16px 14px 40px; max-width:560px; margin:0 auto;}
+  h1{font-size:21px; margin:6px 0 2px;}
+  .sub{color:var(--dim); font-size:13px; margin-bottom:14px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:14px;}
+  .card h2{font-size:16px; margin:0 0 10px;}
+  .row{display:flex; gap:10px; align-items:center;}
+  .grow{flex:1;}
+  .btn{display:inline-block; border:none; border-radius:12px; padding:12px 16px; font-size:15px;
+    background:var(--acc); color:#fff; text-decoration:none; text-align:center; cursor:pointer; font-weight:600;}
+  .btn.green{background:var(--acc2); color:#06281b;}
+  .btn.ghost{background:var(--card2); color:var(--txt); border:1px solid var(--line); font-weight:500;}
+  .btn.small{padding:8px 12px; font-size:13px; border-radius:10px;}
+  .btn:disabled{opacity:.45;}
+  .stat{display:flex; gap:10px;}
+  .stat .box{flex:1; background:var(--card2); border-radius:12px; padding:10px; text-align:center;}
+  .stat .num{font-size:22px; font-weight:700;}
+  .stat .lab{font-size:12px; color:var(--dim); margin-top:2px;}
+  .lecture-title{font-size:17px; font-weight:700; margin:2px 0 4px;}
+  .lecture-meta{color:var(--dim); font-size:13px; margin-bottom:12px;}
+  .phase{display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--line);}
+  .phase:first-of-type{border-top:none;}
+  .phase .no{width:26px; height:26px; border-radius:50%; background:var(--card2); color:var(--dim);
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex:none; margin-top:2px;}
+  .phase.active .no{background:var(--acc); color:#fff;}
+  .phase.done .no{background:var(--acc2); color:#06281b;}
+  .phase .pt{font-weight:600; font-size:15px;}
+  .phase .pd{color:var(--dim); font-size:13px; margin-top:2px; line-height:1.5;}
+  .timer{font-size:44px; font-weight:800; text-align:center; letter-spacing:1px; margin:8px 0 4px; font-variant-numeric:tabular-nums;}
+  .timer-lab{text-align:center; color:var(--dim); font-size:13px; margin-bottom:10px;}
+  input[type=number], input[type=text], textarea{
+    width:100%; background:var(--card2); border:1px solid var(--line); border-radius:10px;
+    color:var(--txt); padding:11px 12px; font-size:15px; outline:none;}
+  input:focus, textarea:focus{border-color:var(--acc);}
+  .score-row{display:flex; gap:8px; align-items:center;}
+  .score-row input{width:70px; text-align:center;}
+  .hist{font-size:13px; color:var(--dim); line-height:1.9;}
+  .hist b{color:var(--txt);}
+  .word{padding:10px 0; border-top:1px solid var(--line);}
+  .word:first-of-type{border-top:none;}
+  .word .w{font-size:16px; font-weight:700;}
+  .word .s{color:var(--dim); font-size:13px; margin-top:2px; line-height:1.5;}
+  .tag{display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; background:var(--card2); color:var(--dim); margin-left:8px; vertical-align:2px;}
+  .tag.ok{background:rgba(55,217,154,.15); color:var(--acc2);}
+  .hint{font-size:13px; color:var(--warn); margin-top:8px; line-height:1.6;}
+  .ok-note{font-size:13px; color:var(--acc2); margin-top:8px; line-height:1.6;}
+  .lesson{display:flex; gap:10px; align-items:center; padding:11px 0; border-top:1px solid var(--line);}
+  .lesson:first-of-type{border-top:none;}
+  .lesson .lt{font-weight:600; font-size:14px;}
+  .lesson .lm{color:var(--dim); font-size:12px; margin-top:1px;}
+  .foot{color:var(--dim); font-size:12px; text-align:center; line-height:1.7; margin-top:6px;}
+  .flash{min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:var(--card2); border-radius:12px; padding:18px; text-align:center; cursor:pointer;}
+  .flash .fw{font-size:24px; font-weight:800;}
+  .flash .fs{color:var(--dim); font-size:14px; margin-top:8px; line-height:1.6; display:none;}
+  .flash.show .fs{display:block;}
+</style>
+</head>
+<body>
+
+<h1>英语每日 30 分钟</h1>
+<div class="sub">托福目标约 105 · 一篇讲座吃透：精听 → 生词 → 跟读</div>
+
+<div class="card">
+  <div class="stat">
+    <div class="box"><div class="num" id="streakNum">0</div><div class="lab">连续天数</div></div>
+    <div class="box"><div class="num" id="doneNum">0</div><div class="lab">已完成讲座</div></div>
+    <div class="box"><div class="num" id="wordNum">0</div><div class="lab">生词本</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>今日讲座</h2>
+  <div class="lecture-title" id="todayTitle">—</div>
+  <div class="lecture-meta" id="todayMeta">—</div>
+  <a class="btn grow" id="todayLink" href="#" target="_blank" rel="noopener" style="display:block;">打开讲座（考满分）</a>
+  <div class="hint" id="catchupHint" style="display:none;"></div>
+</div>
+
+<div class="card">
+  <h2>三步流程 + 计时器</h2>
+  <div id="phases"></div>
+  <div class="timer" id="timerText">15:00</div>
+  <div class="timer-lab" id="timerLab">第 1 步 · 精听</div>
+  <div class="row">
+    <button class="btn grow" id="timerBtn">开始</button>
+    <button class="btn ghost" id="timerReset">重置本段</button>
+  </div>
+  <div class="row" style="margin-top:10px;">
+    <button class="btn ghost grow" id="phaseDone">这一步做完了 → 下一步</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>记录做题分数</h2>
+  <div class="score-row">
+    <input type="number" id="scoreRight" min="0" placeholder="对">
+    <span>/</span>
+    <input type="number" id="scoreTotal" min="1" placeholder="总题数">
+    <button class="btn green grow" id="scoreSave">保存并完成今天</button>
+  </div>
+  <div id="scoreJudge"></div>
+  <div class="hist" id="scoreHist" style="margin-top:10px;"></div>
+</div>
+
+<div class="card">
+  <h2>生词本（只收"看了认识、听时没反应"的词）</h2>
+  <input type="text" id="wordInput" placeholder="单词，如 isotope">
+  <textarea id="wordSentence" rows="2" placeholder="它在讲座里的原句（粘过来就行）" style="margin-top:8px;"></textarea>
+  <button class="btn grow" id="wordAdd" style="width:100%; margin-top:10px;">加入生词本</button>
+  <div id="wordList" style="margin-top:6px;"></div>
+</div>
+
+<div class="card">
+  <h2>生词复习（点卡片看原句）</h2>
+  <div class="flash" id="flashCard">
+    <div class="fw" id="flashWord">暂无生词</div>
+    <div class="fs" id="flashSent"></div>
+  </div>
+  <div class="row" style="margin-top:10px;">
+    <button class="btn ghost grow" id="flashPrev">← 上一个</button>
+    <button class="btn ghost grow" id="flashNext">下一个 →</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>课程表</h2>
+  <div id="lessonList"></div>
+</div>
+
+<div class="foot">
+  数据只存在这台设备的浏览器里，不上传任何服务器。<br>
+  换手机或清缓存会丢记录，重要的分数可以截图留底。
+</div>
+
+<script>
+"use strict";
+/* ============ 数据 ============ */
+var LESSONS = [
+  {day:1, title:"两栖动物与环境", topic:"环境科学 · 讲座", url:"https://toefl.kmf.com/detail/listen/623r7j.html"},
+  {day:2, title:"北极熊与营养级联", topic:"生态学 · 讲座", url:"https://toefl.kmf.com/detail/listen/12cthj.html"},
+  {day:3, title:"冰芯与历史气候", topic:"地球科学 · 讲座", url:"https://toefl.kmf.com/detail/listen/02de4j.html"}
+];
+var PHASES = [
+  {min:15, name:"精听", desc:"先盲听一遍抓大意；再一句一句听，听不出的看原文那句、倒回去重听；最后做题。"},
+  {min:10, name:"生词", desc:"把「看了认识、听时没反应过来」的词连原句记进下面的生词本，只收这类词。"},
+  {min:5,  name:"跟读", desc:"挑讲座里 30 秒到 1 分钟，音频放一句、你跟一句，模仿语调和连读。"}
+];
+var KEY = "toeflDaily.v1";
+var state = load();
+function load(){
+  try{ var s = JSON.parse(localStorage.getItem(KEY)); if(s) return s; }catch(e){}
+  return {done:{}, scores:[], words:[], lastDate:"", streak:0};
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function todayStr(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function yesterdayStr(){ var d=new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+
+/* 当前应做的讲座 = 第一个未完成的 */
+function currentLesson(){
+  for(var i=0;i<LESSONS.length;i++){ if(!state.done[LESSONS[i].day]) return LESSONS[i]; }
+  return null;
+}
+
+/* ============ 渲染 ============ */
+function render(){
+  var doneCount = Object.keys(state.done).length;
+  document.getElementById("streakNum").textContent = state.streak;
+  document.getElementById("doneNum").textContent = doneCount;
+  document.getElementById("wordNum").textContent = state.words.length;
+
+  var cur = currentLesson();
+  if(cur){
+    document.getElementById("todayTitle").textContent = "Day " + cur.day + " · " + cur.title;
+    document.getElementById("todayMeta").textContent = cur.topic + " · 考满分 ETS 官方真题";
+    var a = document.getElementById("todayLink");
+    a.href = cur.url; a.style.display = "block"; a.textContent = "打开讲座（考满分）";
+    var hint = document.getElementById("catchupHint");
+    if(cur.day > 1 && doneCount < cur.day - 1){
+      hint.style.display = "block";
+      hint.textContent = "补练规则：前面有没练完的，先从最早缺的那篇开始，就是这一篇，别跳着练。";
+    } else { hint.style.display = "none"; }
+  } else {
+    document.getElementById("todayTitle").textContent = "已排的讲座都练完了 🎉";
+    document.getElementById("todayMeta").textContent = "跟 Muse 说一声，马上给你排 Day 4 往后的。";
+    document.getElementById("todayLink").style.display = "none";
+  }
+
+  /* 阶段列表 */
+  var ph = "";
+  for(var i=0;i<PHASES.length;i++){
+    var cls = "phase" + (i===curPhase ? " active" : "") + (i<curPhase ? " done" : "");
+    ph += '<div class="'+cls+'"><div class="no">'+(i+1)+'</div><div class="grow">'
+        + '<div class="pt">第 '+(i+1)+' 步 · '+PHASES[i].name+'（'+PHASES[i].min+' 分钟）</div>'
+        + '<div class="pd">'+PHASES[i].desc+'</div></div></div>';
+  }
+  document.getElementById("phases").innerHTML = ph;
+  document.getElementById("timerLab").textContent = "第 " + (curPhase+1) + " 步 · " + PHASES[curPhase].name;
+
+  /* 分数历史 */
+  var h = "";
+  var recent = state.scores.slice(-5).reverse();
+  for(var j=0;j<recent.length;j++){
+    var s = recent[j];
+    h += "Day " + s.day + "（" + s.date.slice(5) + "）：<b>" + s.right + " / " + s.total + "</b><br>";
+  }
+  document.getElementById("scoreHist").innerHTML = h || "还没有记录。练完第一篇，把分数填进来。";
+
+  /* 生词列表 */
+  var wl = "";
+  for(var k=state.words.length-1;k>=0;k--){
+    var w = state.words[k];
+    wl += '<div class="word"><span class="w">'+esc(w.word)+'</span>'
+        + '<span class="tag'+(w.known?" ok":"")+'">'+(w.known?"已掌握":"待复习")+'</span>'
+        + '<div class="s">'+esc(w.sentence||"")+'</div>'
+        + '<div style="margin-top:6px;"><button class="btn ghost small" data-act="toggle" data-i="'+k+'">'+(w.known?"标回待复习":"标记已掌握")+'</button> '
+        + '<button class="btn ghost small" data-act="del" data-i="'+k+'">删除</button></div></div>';
+  }
+  document.getElementById("wordList").innerHTML = wl || '<div class="hist" style="margin-top:8px;">还是空的。今天精听时把没听出来的词加进来。</div>';
+
+  /* 课程表 */
+  var ll = "";
+  for(var m=0;m<LESSONS.length;m++){
+    var L = LESSONS[m];
+    var st = state.done[L.day] ? '<span class="tag ok">已完成</span>'
+           : (cur && L.day===cur.day ? '<span class="tag">今天练这篇</span>' : '<span class="tag">待练</span>');
+    ll += '<div class="lesson"><div class="grow"><div class="lt">Day '+L.day+' · '+L.title+'</div>'
+        + '<div class="lm">'+L.topic+'</div></div>'+st
+        + ' <a class="btn ghost small" href="'+L.url+'" target="_blank" rel="noopener">打开</a></div>';
+  }
+  document.getElementById("lessonList").innerHTML = ll;
+
+  renderFlash();
+}
+function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ============ 计时器 ============ */
+var curPhase = 0, remainSec = PHASES[0].min*60, timerId = null, running = false;
+function fmt(s){ return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+function drawTimer(){ document.getElementById("timerText").textContent = fmt(Math.max(remainSec,0)); }
+function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } running=false; document.getElementById("timerBtn").textContent="开始"; }
+document.getElementById("timerBtn").addEventListener("click", function(){
+  if(running){ stopTimer(); return; }
+  running = true; this.textContent = "暂停";
+  timerId = setInterval(function(){
+    remainSec--;
+    drawTimer();
+    if(remainSec<=0){
+      stopTimer();
+      if(navigator.vibrate) navigator.vibrate([200,100,200]);
+      alert("这一段到时间了。点「这一步做完了」进入下一步。");
+    }
+  }, 1000);
+});
+document.getElementById("timerReset").addEventListener("click", function(){
+  stopTimer(); remainSec = PHASES[curPhase].min*60; drawTimer();
+});
+document.getElementById("phaseDone").addEventListener("click", function(){
+  stopTimer();
+  if(curPhase < PHASES.length-1){ curPhase++; }
+  else { curPhase = 0; alert("三步都走完了！去上面记录今天的做题分数，就算完成今天。"); }
+  remainSec = PHASES[curPhase].min*60; drawTimer(); render();
+});
+
+/* ============ 分数 ============ */
+document.getElementById("scoreSave").addEventListener("click", function(){
+  var r = parseInt(document.getElementById("scoreRight").value,10);
+  var t = parseInt(document.getElementById("scoreTotal").value,10);
+  var judge = document.getElementById("scoreJudge");
+  if(isNaN(r)||isNaN(t)||t<=0||r<0||r>t){ judge.innerHTML = '<div class="hint">先把分数填对：答对数不能大于总题数。</div>'; return; }
+  var cur = currentLesson();
+  if(!cur){ judge.innerHTML = '<div class="hint">已排的讲座都完成了，先找 Muse 要新的再记分。</div>'; return; }
+  state.scores.push({day:cur.day, right:r, total:t, date:todayStr()});
+  state.done[cur.day] = todayStr();
+  if(state.lastDate !== todayStr()){
+    state.streak = (state.lastDate === yesterdayStr()) ? state.streak+1 : 1;
+    state.lastDate = todayStr();
+  }
+  save();
+  var ratio = r/t;
+  var msg, cls;
+  if(ratio >= 2/3){ msg = "这个正确率（"+r+"/"+t+"）说明这一档难度正合适，下一篇保持同难度。"; cls="ok-note"; }
+  else if(ratio <= 1/3){ msg = "正确率偏低（"+r+"/"+t+"），不怪你，是材料跳太快了——把这个分数发给 Muse，下一篇给你降一档。"; cls="hint"; }
+  else { msg = "正确率（"+r+"/"+t+"）在中间档：一半靠猜说明正在进步区，保持这个难度再练两篇看看。把分数发给 Muse 定下一档。"; cls="ok-note"; }
+  judge.innerHTML = '<div class="'+cls+'">'+msg+'</div>';
+  render();
+});
+
+/* ============ 生词 ============ */
+document.getElementById("wordAdd").addEventListener("click", function(){
+  var w = document.getElementById("wordInput").value.trim();
+  var s = document.getElementById("wordSentence").value.trim();
+  if(!w){ alert("先填单词。"); return; }
+  state.words.push({word:w, sentence:s, known:false});
+  save();
+  document.getElementById("wordInput").value = "";
+  document.getElementById("wordSentence").value = "";
+  flashIdx = state.words.length - 1;
+  render();
+});
+document.getElementById("wordList").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  var i = parseInt(b.getAttribute("data-i"),10);
+  if(b.getAttribute("data-act")==="toggle"){ state.words[i].known = !state.words[i].known; }
+  if(b.getAttribute("data-act")==="del"){ state.words.splice(i,1); }
+  save(); render();
+});
+
+/* ============ 复习卡 ============ */
+var flashIdx = 0;
+function renderFlash(){
+  var card = document.getElementById("flashCard");
+  card.classList.remove("show");
+  if(!state.words.length){
+    document.getElementById("flashWord").textContent = "暂无生词";
+    document.getElementById("flashSent").textContent = "";
+    return;
+  }
+  if(flashIdx >= state.words.length) flashIdx = 0;
+  if(flashIdx < 0) flashIdx = state.words.length - 1;
+  var w = state.words[flashIdx];
+  document.getElementById("flashWord").textContent = w.word;
+  document.getElementById("flashSent").textContent = w.sentence || "（没记原句）";
+}
+document.getElementById("flashCard").addEventListener("click", function(){ this.classList.toggle("show"); });
+document.getElementById("flashPrev").addEventListener("click", function(){ flashIdx--; renderFlash(); });
+document.getElementById("flashNext").addEventListener("click", function(){ flashIdx++; renderFlash(); });
+
+drawTimer();
+render();
+</script>
+</body>
+</html>
