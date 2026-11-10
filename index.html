@@ -169,6 +169,7 @@
     </div>
     <div class="hint" id="catchupHint" style="display:none;"></div>
     <div class="ok-note" id="lessonNote" style="display:none;"></div>
+    <button class="btn ghost small" id="exitReview" style="display:none; margin-top:10px;">← 回到今日课程</button>
   </div>
 
   <div class="card">
@@ -462,6 +463,13 @@ function currentLesson(){
   for(var i=0;i<list.length;i++){ if(!state.done[list[i].day]) return list[i]; }
   return null;
 }
+var viewingDay = null;
+function lessonByDay(day){
+  var list = allLessons();
+  for(var i=0;i<list.length;i++){ if(list[i].day === day) return list[i]; }
+  return null;
+}
+function activeLesson(){ return viewingDay ? lessonByDay(viewingDay) : currentLesson(); }
 function wordDue(w){ return !w.known && (!w.due || w.due <= todayStr()); }
 function wordSet(){
   var set = {};
@@ -560,7 +568,7 @@ function updateWordProgress(L, idx, t){
   }
 }
 function syncSubs(){
-  var L = currentLesson();
+  var L = activeLesson();
   if(!L || !L.cues || !L.cues.length || loadedDay !== L.day) return;
   var t = vid.currentTime - state.subOffset;
   var idx = -1;
@@ -619,7 +627,7 @@ vid.addEventListener("canplay", function(){
   document.getElementById("vidHint").style.display = "none";
 });
 document.getElementById("useEmbedBtn").addEventListener("click", function(){
-  var L = currentLesson(); if(!L || !L.embed) return;
+  var L = activeLesson(); if(!L || !L.embed) return;
   vid.style.display = "none"; vid.pause();
   var vw = document.getElementById("videoWrap"), vf = document.getElementById("videoFrame");
   vw.style.display = "block";
@@ -631,7 +639,7 @@ document.getElementById("useEmbedBtn").addEventListener("click", function(){
 vid.addEventListener("timeupdate", syncSubs);
 subsBox.addEventListener("scroll", function(){ userScrollAt = Date.now(); });
 subsBox.addEventListener("click", function(e){
-  var L = currentLesson(); if(!L || !L.cues) return;
+  var L = activeLesson(); if(!L || !L.cues) return;
   var star = e.target.closest(".star");
   if(star){
     var si = parseInt(star.getAttribute("data-star"),10);
@@ -737,7 +745,7 @@ document.getElementById("sleepBtn").addEventListener("click", function(){
 
 /* ============ 听写 + 跟读 ============ */
 var dictIdx = 0, dictArmed = false;
-function dictLesson(){ var L = currentLesson(); return (L && L.cues && L.cues.length) ? L : null; }
+function dictLesson(){ var L = activeLesson(); return (L && L.cues && L.cues.length) ? L : null; }
 function playCue(i){
   var L = dictLesson(); if(!L) return;
   dictIdx = Math.max(0, Math.min(i, L.cues.length - 1));
@@ -856,10 +864,13 @@ function render(){
   document.getElementById("minNum").textContent = Math.floor((state.minutes[todayStr()] || 0) / 60);
   renderCal(); renderChart();
 
-  var cur = currentLesson();
+  var todayL = currentLesson();
+  var cur = activeLesson();
+  var exitBtn = document.getElementById("exitReview");
   if(cur){
     document.getElementById("todayTitle").textContent = "Day " + cur.day + " · " + cur.title;
-    document.getElementById("todayMeta").textContent = "今日演讲 · " + cur.topic + " · TED 官方，免费带双语字幕";
+    document.getElementById("todayMeta").textContent = (viewingDay ? "重看复习（不影响今日进度） · " : "今日演讲 · ") + cur.topic + " · TED 官方，免费带双语字幕";
+    exitBtn.style.display = viewingDay ? "" : "none";
     var a = document.getElementById("todayLink");
     a.href = cur.url; a.style.display = ""; a.textContent = "TED 原页";
     var tt = document.getElementById("todayTranscript");
@@ -867,7 +878,7 @@ function render(){
     var ln = document.getElementById("lessonNote");
     if(cur.note){ ln.style.display = "block"; ln.textContent = cur.note; } else { ln.style.display = "none"; }
     var hint = document.getElementById("catchupHint");
-    if(cur.day > 1 && doneCount < cur.day - 1){
+    if(!viewingDay && cur.day > 1 && doneCount < cur.day - 1){
       hint.style.display = "block";
       hint.textContent = "补练规则：前面有没练完的，先从最早缺的那篇开始，就是这一篇，别跳着练。";
     } else { hint.style.display = "none"; }
@@ -905,11 +916,12 @@ function render(){
   for(var m=0;m<list.length;m++){
     var L = list[m];
     var st = state.done[L.day] ? '<span class="tag ok">已完成</span>'
-           : (cur && L.day===cur.day ? '<span class="tag">今天练这篇</span>' : '<span class="tag">待练</span>');
+           : (todayL && L.day===todayL.day ? '<span class="tag">今天练这篇</span>' : '<span class="tag">待练</span>');
     var del = L.custom ? ' <button class="btn ghost small" data-del-lesson="'+L.day+'">删</button>' : '';
+    var openBtn = ' <button class="btn '+(state.done[L.day] ? 'ghost' : '')+' small" data-open-lesson="'+L.day+'">'+(state.done[L.day] ? '重看这篇' : '去练习')+'</button>';
     ll += '<div class="lesson"><div class="grow"><div class="lt">Day '+L.day+' · '+esc(L.title)+'</div>'
         + '<div class="lm">'+esc(L.topic)+'</div></div>'+st
-        + ' <a class="btn ghost small" href="'+esc(L.url)+'" target="_blank" rel="noopener">打开</a>'+del+'</div>';
+        + openBtn + ' <a class="btn ghost small" href="'+esc(L.url)+'" target="_blank" rel="noopener">原页</a>'+del+'</div>';
   }
   document.getElementById("lessonList").innerHTML = ll;
 
@@ -1015,14 +1027,18 @@ document.getElementById("scoreSave").addEventListener("click", function(){
   var t = parseInt(document.getElementById("scoreTotal").value,10);
   var judge = document.getElementById("scoreJudge");
   if(isNaN(r)||isNaN(t)||t<=0||r<0||r>t){ judge.innerHTML = '<div class="hint">先把分数填对：答对数不能大于总题数。</div>'; return; }
-  var cur = currentLesson();
+  var cur = activeLesson();
   if(!cur){ judge.innerHTML = '<div class="hint">已排的演讲都完成了，先在课程表里加一篇新的再记分。</div>'; return; }
+  var wasDone = !!state.done[cur.day];
   state.scores.push({day:cur.day, right:r, total:t, date:todayStr()});
-  state.done[cur.day] = todayStr();
-  if(state.lastDate !== todayStr()){
-    state.streak = (state.lastDate === yesterdayStr()) ? state.streak+1 : 1;
-    state.lastDate = todayStr();
+  if(!wasDone){
+    state.done[cur.day] = todayStr();
+    if(state.lastDate !== todayStr()){
+      state.streak = (state.lastDate === yesterdayStr()) ? state.streak+1 : 1;
+      state.lastDate = todayStr();
+    }
   }
+  if(viewingDay && wasDone){ viewingDay = null; loadedDay = null; }
   save();
   var ratio = r/t;
   var msg, cls;
@@ -1117,7 +1133,7 @@ document.getElementById("favList").addEventListener("click", function(e){
   var b = e.target.closest("button[data-delfav]"); if(!b) return;
   state.favs.splice(parseInt(b.getAttribute("data-delfav"),10), 1);
   save(); renderFavs();
-  var cur = currentLesson(); if(cur) renderSubs(cur);
+  var cur = activeLesson(); if(cur) renderSubs(cur);
 });
 function renderReview(){ buildQueue(); renderFlash(); renderWordList(); renderFavs(); }
 document.getElementById("flashCard").addEventListener("click", function(){ this.classList.toggle("show"); });
@@ -1160,7 +1176,19 @@ document.getElementById("lessonAdd").addEventListener("click", function(){
   render();
   alert("已加为 Day " + nextDay + "。练完前面的，它会自动成为今日演讲。");
 });
+document.getElementById("exitReview").addEventListener("click", function(){
+  viewingDay = null; loadedDay = null; curCueIdx = -1; dictIdx = 0;
+  render();
+});
 document.getElementById("lessonList").addEventListener("click", function(e){
+  var ob = e.target.closest("button[data-open-lesson]");
+  if(ob){
+    viewingDay = parseInt(ob.getAttribute("data-open-lesson"),10);
+    loadedDay = null; curCueIdx = -1; dictIdx = 0; endStopped = false;
+    showView("practice");
+    render();
+    return;
+  }
   var b = e.target.closest("button[data-del-lesson]"); if(!b) return;
   var day = parseInt(b.getAttribute("data-del-lesson"),10);
   if(!confirm("删掉 Day " + day + " 这篇自加演讲？")) return;
