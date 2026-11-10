@@ -70,6 +70,13 @@
   .livecap .lw.now{background:#ffd60a; color:#1d1d1f; font-weight:700;}
   .cue .en .w.spoken{background:#3a3a3c; color:#f5f5f7;}
   .cue .en .w.now{background:var(--acc); color:#fff;}
+  .pbar{height:6px; background:#e9e9ee; border-radius:99px; overflow:hidden; margin-bottom:10px;}
+  .pfill{height:100%; background:var(--acc); width:0%; transition:width .3s;}
+  .chips{display:flex; gap:8px; margin:6px 0 10px;}
+  .chip{border:none; background:var(--chip); color:var(--dim); border-radius:99px; padding:7px 14px; font-size:13px; cursor:pointer; font-weight:500;}
+  .chip.on{background:var(--txt); color:#fff;}
+  .flash .fw.sent{font-size:18.5px; font-weight:600; line-height:1.65; text-align:left;}
+  .flash .fw .blank{color:var(--acc); letter-spacing:2px;}
   .dict-ok{color:var(--acc2); font-weight:600;}
   .dict-bad{color:var(--bad); font-weight:600; text-decoration:underline;}
   .timer{font-size:46px; font-weight:700; text-align:center; letter-spacing:-.02em; margin:6px 0 2px; font-variant-numeric:tabular-nums;}
@@ -239,6 +246,7 @@
 <div class="view" id="view-review">
   <div class="card">
     <h2>每日生词复习 <span class="mini">间隔重复 · 到期才出现</span></h2>
+    <div class="pbar"><div class="pfill" id="flashProg"></div></div>
     <div class="mini" id="dueInfo" style="margin-bottom:10px;"></div>
     <div class="flash" id="flashCard">
       <div class="fw" id="flashWord">暂无生词</div>
@@ -248,7 +256,11 @@
       <button class="btn red grow" id="flashNo">不认识</button>
       <button class="btn green grow" id="flashYes">认识</button>
     </div>
-    <div class="mini" style="margin-top:8px;">先想意思，再点卡片对原句，最后点认识/不认识。认识升盒（1 天→2 天→4 天后再出现）；不认识回 1 盒、今天还会再考你；3 盒再答对算掌握。</div>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn ghost small grow" id="speakWord">🔊 读单词</button>
+      <button class="btn ghost small grow" id="speakSent">🔊 读原句</button>
+    </div>
+    <div class="mini" style="margin-top:8px;">卡片先给原句挖空——想一下空里是哪个词、什么意思，再点卡片翻面对答案，最后点认识/不认识。认识升盒（1 天→2 天→4 天后再出现）；不认识回 1 盒、今天还会再考你；3 盒再答对算掌握。</div>
   </div>
 
   <div class="card">
@@ -258,6 +270,13 @@
 
   <div class="card">
     <h2>生词本</h2>
+    <div class="mini" id="wordStats" style="margin-bottom:6px;"></div>
+    <div class="chips">
+      <button class="chip on" data-wf="all">全部</button>
+      <button class="chip" data-wf="due">待复习</button>
+      <button class="chip" data-wf="known">已掌握</button>
+    </div>
+    <input type="text" id="wordSearch" placeholder="搜生词本里的词" style="margin-bottom:12px;">
     <input type="text" id="wordInput" placeholder="手动加词，如 isotope">
     <textarea id="wordSentence" rows="2" placeholder="它在演讲里的原句（粘过来就行）" style="margin-top:8px;"></textarea>
     <button class="btn grow" id="wordAdd" style="width:100%; margin-top:10px;">加入生词本</button>
@@ -485,7 +504,7 @@ function showView(name){
     document.getElementById("view-"+views[i]).classList.toggle("on", views[i]===name);
   }
   for(var j=0;j<tabBtns.length;j++) tabBtns[j].classList.toggle("on", tabBtns[j].getAttribute("data-view")===name);
-  if(name==="review") renderReview();
+  if(name==="review"){ sessYes = 0; sessNo = 0; sessDone = {}; queueStart = 0; renderReview(); }
   window.scrollTo(0,0);
 }
 for(var tb=0; tb<tabBtns.length; tb++){
@@ -1050,20 +1069,60 @@ document.getElementById("scoreSave").addEventListener("click", function(){
 });
 
 /* ============ 生词本 + 复习 ============ */
+var wlFilter = "all", wlQuery = "";
+function speak(text){
+  try{
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US"; u.rate = 0.92;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }catch(e){}
+}
 function renderWordList(){
+  var dueN = 0, knownN = 0;
+  for(var s=0;s<state.words.length;s++){ if(state.words[s].known) knownN++; else if(wordDue(state.words[s])) dueN++; }
+  document.getElementById("wordStats").textContent = "共 " + state.words.length + " 个词 · 今日待复习 " + dueN + " 个 · 已掌握 " + knownN + " 个";
+  var idxs = [];
+  for(var k=0;k<state.words.length;k++){
+    var w0 = state.words[k];
+    if(wlFilter === "due" && (w0.known || !wordDue(w0))) continue;
+    if(wlFilter === "known" && !w0.known) continue;
+    if(wlQuery && w0.word.toLowerCase().indexOf(wlQuery.toLowerCase()) < 0) continue;
+    idxs.push(k);
+  }
+  idxs.sort(function(a, b){
+    var wa = state.words[a], wb = state.words[b];
+    var da = (!wa.known && wordDue(wa)) ? 0 : (wa.known ? 2 : 1);
+    var db = (!wb.known && wordDue(wb)) ? 0 : (wb.known ? 2 : 1);
+    if(da !== db) return da - db;
+    if(wa.box !== wb.box) return wa.box - wb.box;
+    return b - a;
+  });
   var wl = "";
-  for(var k=state.words.length-1;k>=0;k--){
-    var w = state.words[k];
+  for(var n=0;n<idxs.length;n++){
+    var k2 = idxs[n], w = state.words[k2];
     var tag = w.known ? '<span class="tag ok">已掌握</span>'
             : (wordDue(w) ? '<span class="tag due">待复习 · '+w.box+' 盒</span>' : '<span class="tag">'+w.box+' 盒 · '+w.due.slice(5)+' 再练</span>');
     wl += '<div class="word"><span class="w">'+esc(w.word)+'</span>' + tag
         + '<div class="s">'+esc(w.sentence||"")+'</div>'
         + (w.sZh ? '<div class="s">'+esc(w.sZh)+'</div>' : '')
-        + '<div style="margin-top:6px;"><button class="btn ghost small" data-act="toggle" data-i="'+k+'">'+(w.known?"标回待复习":"标记已掌握")+'</button> '
-        + '<button class="btn ghost small" data-act="del" data-i="'+k+'">删除</button></div></div>';
+        + '<div style="margin-top:6px;"><button class="btn ghost small" data-act="speak" data-i="'+k2+'">🔊 读</button> '
+        + '<button class="btn ghost small" data-act="toggle" data-i="'+k2+'">'+(w.known?"标回待复习":"标记已掌握")+'</button> '
+        + '<button class="btn ghost small" data-act="del" data-i="'+k2+'">删除</button></div></div>';
   }
-  document.getElementById("wordList").innerHTML = wl || '<div class="hist" style="margin-top:8px;">还是空的。练习时在字幕里点单词就能存进来。</div>';
+  document.getElementById("wordList").innerHTML = wl || '<div class="hist" style="margin-top:8px;">'+(state.words.length ? "这个筛选下没有词。" : "还是空的。练习时在字幕里点单词就能存进来。")+'</div>';
 }
+var wfChips = document.querySelectorAll(".chip[data-wf]");
+for(var wc=0; wc<wfChips.length; wc++){
+  wfChips[wc].addEventListener("click", function(){
+    wlFilter = this.getAttribute("data-wf");
+    for(var x=0;x<wfChips.length;x++) wfChips[x].classList.toggle("on", wfChips[x] === this);
+    renderWordList();
+  });
+}
+document.getElementById("wordSearch").addEventListener("input", function(){
+  wlQuery = this.value.trim();
+  renderWordList();
+});
 document.getElementById("wordAdd").addEventListener("click", function(){
   var w = document.getElementById("wordInput").value.trim();
   var s = document.getElementById("wordSentence").value.trim();
@@ -1077,6 +1136,7 @@ document.getElementById("wordAdd").addEventListener("click", function(){
 document.getElementById("wordList").addEventListener("click", function(e){
   var b = e.target.closest("button"); if(!b) return;
   var i = parseInt(b.getAttribute("data-i"),10);
+  if(b.getAttribute("data-act")==="speak"){ speak(state.words[i].word); return; }
   if(b.getAttribute("data-act")==="toggle"){
     var w = state.words[i];
     w.known = !w.known;
@@ -1086,32 +1146,57 @@ document.getElementById("wordList").addEventListener("click", function(e){
   save(); render(); renderReview();
 });
 var queue = [], qIdx = 0;
+var sessYes = 0, sessNo = 0, sessDone = {}, queueStart = 0;
 function buildQueue(){
   queue = [];
   for(var i=0;i<state.words.length;i++){ if(wordDue(state.words[i])) queue.push(i); }
   qIdx = 0;
+  if(queueStart === 0) queueStart = queue.length;
+}
+function blankedSentence(w){
+  if(!w.sentence) return "";
+  var pat = w.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  var out = w.sentence.replace(new RegExp(pat, "i"), "＿＿＿＿");
+  return (out === w.sentence) ? "" : out;
 }
 function renderFlash(){
   var card = document.getElementById("flashCard");
   card.classList.remove("show");
   var info = document.getElementById("dueInfo");
+  var fw = document.getElementById("flashWord"), fs = document.getElementById("flashSent");
+  var prog = document.getElementById("flashProg");
+  var doneN = Object.keys(sessDone).length;
+  prog.style.width = queueStart ? Math.round(doneN / queueStart * 100) + "%" : "0%";
   if(!state.words.length){
     info.textContent = "生词本还是空的，去练习页点字幕里的单词存进来。";
-    document.getElementById("flashWord").textContent = "暂无生词";
-    document.getElementById("flashSent").textContent = "";
+    fw.textContent = "暂无生词"; fw.classList.remove("sent");
+    fs.textContent = "";
     return;
   }
   if(!queue.length){
-    info.textContent = "今天到期的词都复习完了 ✔ 没到期的到日子会自动出现。";
-    document.getElementById("flashWord").textContent = "今日复习完成 🎉";
-    document.getElementById("flashSent").textContent = "";
+    prog.style.width = "100%";
+    if(sessYes + sessNo > 0){
+      info.textContent = "本轮复习完成：标「认识」" + sessYes + " 次、「不认识」" + sessNo + " 次。没到期的词到日子会自动再出现。";
+    } else {
+      info.textContent = "今天到期的词都复习完了 ✔ 没到期的到日子会自动出现。";
+    }
+    fw.textContent = "今日复习完成 🎉"; fw.classList.remove("sent");
+    fs.textContent = "";
     return;
   }
   if(qIdx >= queue.length) qIdx = 0;
-  info.textContent = "今日待复习 " + queue.length + " 个（第 " + (qIdx+1) + " 个）";
+  info.textContent = "今日待复习 " + queue.length + " 个（第 " + (qIdx+1) + " 个） · 本轮已完成 " + doneN + " 个";
   var w = state.words[queue[qIdx]];
-  document.getElementById("flashWord").textContent = w.word;
-  document.getElementById("flashSent").textContent = w.sentence || "（没记原句）";
+  var blanked = blankedSentence(w);
+  if(blanked){
+    fw.classList.add("sent");
+    fw.innerHTML = esc(blanked).replace("＿＿＿＿", '<span class="blank">＿＿＿＿</span>');
+    fs.innerHTML = '<b style="font-size:19px;">' + esc(w.word) + '</b><br>' + esc(w.sentence) + (w.sZh ? '<br>' + esc(w.sZh) : '');
+  } else {
+    fw.classList.remove("sent");
+    fw.textContent = w.word;
+    fs.innerHTML = esc(w.sentence || "（没记原句）") + (w.sZh ? '<br>' + esc(w.sZh) : '');
+  }
 }
 function renderFavs(){
   var box = document.getElementById("favList");
@@ -1139,6 +1224,7 @@ function renderReview(){ buildQueue(); renderFlash(); renderWordList(); renderFa
 document.getElementById("flashCard").addEventListener("click", function(){ this.classList.toggle("show"); });
 document.getElementById("flashYes").addEventListener("click", function(){
   if(!queue.length) return;
+  sessYes++; sessDone[queue[qIdx]] = true;
   var w = state.words[queue[qIdx]];
   if(w.box >= 3){ w.known = true; }
   else { w.box = w.box + 1; w.due = addDays(new Date(), BOX_INTERVAL[w.box]); }
@@ -1146,14 +1232,20 @@ document.getElementById("flashYes").addEventListener("click", function(){
 });
 document.getElementById("flashNo").addEventListener("click", function(){
   if(!queue.length) return;
+  sessNo++;
   var w = state.words[queue[qIdx]];
   w.box = 1; w.due = todayStr();
   save();
   var cur = queue[qIdx];
   queue.splice(qIdx,1); queue.push(cur);
   if(qIdx >= queue.length) qIdx = 0;
-  renderFlash();
-  document.getElementById("dueInfo").textContent = "今日待复习 " + queue.length + " 个（第 " + (qIdx+1) + " 个）";
+  renderFlash(); renderWordList();
+});
+document.getElementById("speakWord").addEventListener("click", function(){
+  if(queue.length) speak(state.words[queue[qIdx]].word);
+});
+document.getElementById("speakSent").addEventListener("click", function(){
+  if(queue.length && state.words[queue[qIdx]].sentence) speak(state.words[queue[qIdx]].sentence);
 });
 
 /* ============ 课程表：加/删 ============ */
