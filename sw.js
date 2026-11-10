@@ -1,5 +1,5 @@
-/* toefl-daily service worker: cache-first for same-origin, so the page opens offline. */
-var CACHE = "toefl-daily-v2";
+/* toefl-daily service worker: network-first for same-origin (updates land immediately), cache as offline fallback. */
+var CACHE = "toefl-daily-v3";
 var ASSETS = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 self.addEventListener("install", function (e) {
@@ -21,13 +21,12 @@ self.addEventListener("fetch", function (e) {
   var url = new URL(e.request.url);
   if (url.origin !== self.location.origin) return; /* lecture links etc. go straight to network */
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(function (hit) {
-      if (hit) return hit;
-      return fetch(e.request).then(function (res) {
-        var copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
-        return res;
-      });
+    fetch(e.request).then(function (res) {
+      var copy = res.clone();
+      caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+      return res;
+    }).catch(function () {
+      return caches.match(e.request, { ignoreSearch: true });
     })
   );
 });
