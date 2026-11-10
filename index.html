@@ -55,6 +55,15 @@
   .cue .en .w{border-radius:4px; padding:0 1px;}
   .cue .en .w:active{background:#e8e8ed;}
   .cue .en .w.marked{background:var(--hl); box-shadow:inset 0 -2px 0 #e6c619;}
+  .cue .star{float:right; color:var(--faint); font-size:16px; padding:0 2px; margin-left:8px;}
+  .cue .star.faved{color:#e6a817;}
+  .subs.m0 .en{visibility:hidden;}
+  .subs.m0 .zh{display:none !important;}
+  .subs.m2 .zh{display:block;}
+  .subs.m3 .en{visibility:hidden;}
+  .subs.m3 .zh{display:block;}
+  .dict-ok{color:var(--acc2); font-weight:600;}
+  .dict-bad{color:var(--bad); font-weight:600; text-decoration:underline;}
   .timer{font-size:46px; font-weight:700; text-align:center; letter-spacing:-.02em; margin:6px 0 2px; font-variant-numeric:tabular-nums;}
   .timer-lab{text-align:center; color:var(--dim); font-size:13px; margin-bottom:12px;}
   .phase{display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--line);}
@@ -135,8 +144,14 @@
       <button class="btn ghost" id="fwd5v">5 秒 ⏩</button>
     </div>
     <div class="ctl">
-      <button class="btn on" id="pass1Btn">第一遍 · 只看英文</button>
-      <button class="btn ghost" id="pass2Btn">第二遍 · 英文 + 中文</button>
+      <button class="btn ghost modeBtn" data-mode="0">盲听</button>
+      <button class="btn on modeBtn" data-mode="1">只英文</button>
+      <button class="btn ghost modeBtn" data-mode="2">英 + 中</button>
+      <button class="btn ghost modeBtn" data-mode="3">只中文</button>
+    </div>
+    <div class="ctl">
+      <button class="btn ghost" id="loopAllBtn">全文循环</button>
+      <button class="btn ghost" id="sleepBtn">定时关闭</button>
     </div>
     <div class="row" style="margin-top:10px;">
       <a class="btn ghost small grow" id="todayLink" href="#" target="_blank" rel="noopener">TED 原页</a>
@@ -155,7 +170,30 @@
       <span class="mini" id="offVal" style="min-width:64px; text-align:center;">偏移 0.0s</span>
       <button class="btn ghost small" id="offPlus">延后 0.5 秒</button>
     </div>
-    <div class="mini" style="margin-top:8px;">第一遍：只显示英文，听不懂的词直接点一下就存进生词本。第二遍：切到「第二遍」模式，每句英文下面会给出中文释义。</div>
+    <div class="mini" style="margin-top:8px;">第一遍用「只英文」，听不懂的词点一下存生词本；第二遍切「英 + 中」对照中文释义；想测真实水平切「盲听」。点句子右侧 ☆ 收藏好句。</div>
+  </div>
+
+  <div class="card">
+    <h2>听写 + 跟读 <span class="mini">练一句攻一句</span></h2>
+    <div class="mini" id="dictInfo" style="margin-bottom:8px;">对当前高亮的这一句操作。先听写检验，再跟读模仿。</div>
+    <div class="row">
+      <button class="btn grow" id="dictPlay">▶ 播放本句（听写）</button>
+      <button class="btn ghost" id="dictNext">下一句</button>
+    </div>
+    <input type="text" id="dictInput" placeholder="把你听到的这句英文打出来" style="margin-top:10px;" autocomplete="off">
+    <div class="row" style="margin-top:10px;">
+      <button class="btn green grow" id="dictCheck">检查</button>
+      <button class="btn ghost grow" id="dictShow">看答案</button>
+    </div>
+    <div id="dictResult" style="margin-top:8px;"></div>
+    <div style="border-top:1px solid var(--line); margin-top:14px; padding-top:12px;">
+      <div class="row">
+        <button class="btn ghost grow" id="shadPlay">播放原句</button>
+        <button class="btn ghost grow" id="shadRec">🎙 录我的跟读</button>
+        <button class="btn ghost grow" id="shadPlayRec" disabled>播放录音</button>
+      </div>
+      <div class="mini" id="shadInfo" style="margin-top:6px;">跟读三步：听原句 → 录下自己读的 → 两边对比着听，差距自己就听出来了。</div>
+    </div>
   </div>
 
   <div class="card">
@@ -203,6 +241,11 @@
   </div>
 
   <div class="card">
+    <h2>收藏的好句</h2>
+    <div id="favList"></div>
+  </div>
+
+  <div class="card">
     <h2>生词本</h2>
     <input type="text" id="wordInput" placeholder="手动加词，如 isotope">
     <textarea id="wordSentence" rows="2" placeholder="它在演讲里的原句（粘过来就行）" style="margin-top:8px;"></textarea>
@@ -233,6 +276,7 @@
       <div class="box"><div class="num" id="streakNum">0</div><div class="lab">连续天数</div></div>
       <div class="box"><div class="num" id="doneNum">0</div><div class="lab">已完成演讲</div></div>
       <div class="box"><div class="num" id="wordNum">0</div><div class="lab">生词本</div></div>
+      <div class="box"><div class="num" id="minNum">0</div><div class="lab">今日练习（分钟）</div></div>
     </div>
     <div class="cal" id="calGrid"></div>
     <div class="mini" style="margin-top:6px;">最近 4 周打卡（绿 = 当天练过）</div>
@@ -363,6 +407,8 @@ function load(){
   if(!s.scores) s.scores = [];
   if(!s.words) s.words = [];
   if(!s.customLessons) s.customLessons = [];
+  if(!s.favs) s.favs = [];
+  if(!s.minutes) s.minutes = {};
   if(typeof s.subOffset !== "number") s.subOffset = 0;
   for(var i=0;i<s.words.length;i++){
     var w = s.words[i];
@@ -417,13 +463,20 @@ var vid = document.getElementById("vid");
 var subsBox = document.getElementById("subsBox");
 var loadedDay = null, curCueIdx = -1, loopCue = false, userScrollAt = 0, endStopped = false;
 function cleanWord(tok){ return tok.replace(/^[^A-Za-z']+|[^A-Za-z']+$/g,""); }
+var subMode = 1;
+function favSet(){
+  var set = {};
+  for(var i=0;i<state.favs.length;i++) set[state.favs[i].en] = true;
+  return set;
+}
 function renderSubs(L){
   curCueIdx = -1;
+  subsBox.className = "subs m" + subMode;
   if(!L || !L.cues || !L.cues.length){
     subsBox.innerHTML = '<div class="mini">这一篇没有同步字幕（自加篇目），用上面的内嵌视频看，原文稿点「TED 原文稿」。</div>';
     return;
   }
-  var set = wordSet();
+  var set = wordSet(), fs = favSet();
   var html = "";
   for(var i=0;i<L.cues.length;i++){
     var cue = L.cues[i];
@@ -435,7 +488,7 @@ function renderSubs(L){
         en += '<span class="w'+(set[cw.toLowerCase()]?" marked":"")+'" data-w="'+esc(cw)+'" data-cue="'+i+'">'+esc(tok)+'</span> ';
       } else { en += esc(tok) + " "; }
     }
-    html += '<div class="cue" data-i="'+i+'"><div class="en">'+en+'</div>'
+    html += '<div class="cue" data-i="'+i+'"><span class="star'+(fs[cue[1]]?" faved":"")+'" data-star="'+i+'">'+(fs[cue[1]]?"★":"☆")+'</span><div class="en">'+en+'</div>'
           + (cue[2] ? '<div class="zh">'+esc(cue[2])+'</div>' : '') + '</div>';
   }
   subsBox.innerHTML = html;
@@ -456,6 +509,11 @@ function syncSubs(){
     document.getElementById("lessonNote").style.display = "block";
     document.getElementById("lessonNote").textContent = "已播到今天要练的 8 分钟，后半段不用管，去做自测题记分吧。";
   }
+  if(dictArmed && idx > dictIdx){
+    dictArmed = false;
+    vid.pause();
+    vid.currentTime = L.cues[dictIdx][0] + state.subOffset + 0.01;
+  }
   if(idx === curCueIdx) return;
   curCueIdx = idx;
   var prev = subsBox.querySelector(".cue.cur");
@@ -472,11 +530,20 @@ vid.addEventListener("timeupdate", syncSubs);
 subsBox.addEventListener("scroll", function(){ userScrollAt = Date.now(); });
 subsBox.addEventListener("click", function(e){
   var L = currentLesson(); if(!L || !L.cues) return;
+  var star = e.target.closest(".star");
+  if(star){
+    var si = parseInt(star.getAttribute("data-star"),10);
+    toggleFav(L.cues[si][1], L.cues[si][2] || "", L.day);
+    star.classList.toggle("faved");
+    star.textContent = star.classList.contains("faved") ? "★" : "☆";
+    e.stopPropagation();
+    return;
+  }
   var wEl = e.target.closest(".w");
   if(wEl){
     var word = wEl.getAttribute("data-w");
     var cue = L.cues[parseInt(wEl.getAttribute("data-cue"),10)];
-    toggleWord(word, cue ? cue[1] : "");
+    toggleWord(word, cue ? cue[1] : "", cue ? (cue[2] || "") : "");
     e.stopPropagation();
     return;
   }
@@ -488,12 +555,19 @@ subsBox.addEventListener("click", function(e){
     vid.play();
   }
 });
-function toggleWord(word, sentence){
+function toggleFav(en, zh, day){
+  var found = -1;
+  for(var i=0;i<state.favs.length;i++){ if(state.favs[i].en === en){ found = i; break; } }
+  if(found >= 0) state.favs.splice(found,1);
+  else state.favs.push({en:en, zh:zh, day:day});
+  save(); renderFavs();
+}
+function toggleWord(word, sentence, zh){
   var lw = word.toLowerCase();
   var found = -1;
   for(var i=0;i<state.words.length;i++){ if(state.words[i].word.toLowerCase() === lw){ found = i; break; } }
   if(found >= 0){ state.words.splice(found,1); }
-  else { state.words.push({word:word, sentence:sentence, known:false, box:1, due:todayStr()}); }
+  else { state.words.push({word:word, sentence:sentence, sZh:zh||"", known:false, box:1, due:todayStr()}); }
   save();
   var spans = subsBox.querySelectorAll(".w");
   for(var j=0;j<spans.length;j++){
@@ -508,7 +582,7 @@ document.getElementById("loopCue").addEventListener("click", function(){
   this.classList.toggle("on", loopCue);
   this.textContent = loopCue ? "循环本句 · 开" : "循环本句";
 });
-var SPEEDS = [0.75, 1, 1.25], speedIdx = 1;
+var SPEEDS = [0.5, 0.75, 1, 1.25, 1.5], speedIdx = 2;
 document.getElementById("speedBtn").addEventListener("click", function(){
   speedIdx = (speedIdx + 1) % SPEEDS.length;
   vid.playbackRate = SPEEDS[speedIdx];
@@ -521,13 +595,138 @@ document.getElementById("offMinus").addEventListener("click", function(){
 document.getElementById("offPlus").addEventListener("click", function(){
   state.subOffset = Math.min(10, state.subOffset + 0.5); save(); drawOffset(); curCueIdx = -1; syncSubs();
 });
-function setPass(p){
-  subsBox.classList.toggle("pass2", p === 2);
-  document.getElementById("pass1Btn").className = "btn " + (p===1 ? "on" : "ghost");
-  document.getElementById("pass2Btn").className = "btn " + (p===2 ? "on" : "ghost");
+function setMode(m){
+  subMode = m;
+  subsBox.className = "subs m" + m;
+  var btns = document.querySelectorAll(".modeBtn");
+  for(var i=0;i<btns.length;i++){
+    var on = parseInt(btns[i].getAttribute("data-mode"),10) === m;
+    btns[i].className = "btn modeBtn " + (on ? "on" : "ghost");
+  }
 }
-document.getElementById("pass1Btn").addEventListener("click", function(){ setPass(1); });
-document.getElementById("pass2Btn").addEventListener("click", function(){ setPass(2); });
+var modeBtns = document.querySelectorAll(".modeBtn");
+for(var mb=0; mb<modeBtns.length; mb++){
+  modeBtns[mb].addEventListener("click", function(){ setMode(parseInt(this.getAttribute("data-mode"),10)); });
+}
+document.getElementById("loopAllBtn").addEventListener("click", function(){
+  vid.loop = !vid.loop;
+  this.classList.toggle("on", vid.loop);
+  this.textContent = vid.loop ? "全文循环 · 开" : "全文循环";
+});
+var sleepTimer = null, SLEEP_OPTS = [0, 10, 20, 30], sleepIdx = 0;
+document.getElementById("sleepBtn").addEventListener("click", function(){
+  sleepIdx = (sleepIdx + 1) % SLEEP_OPTS.length;
+  if(sleepTimer){ clearTimeout(sleepTimer); sleepTimer = null; }
+  var mins = SLEEP_OPTS[sleepIdx];
+  if(mins > 0){
+    var btn = this;
+    sleepTimer = setTimeout(function(){
+      vid.pause();
+      var p = document.getElementById("player"); if(p) p.pause();
+      btn.textContent = "定时关闭"; btn.classList.remove("on"); sleepIdx = 0;
+    }, mins * 60 * 1000);
+    this.textContent = mins + " 分钟后关闭";
+    this.classList.add("on");
+  } else {
+    this.textContent = "定时关闭";
+    this.classList.remove("on");
+  }
+});
+
+/* ============ 听写 + 跟读 ============ */
+var dictIdx = 0, dictArmed = false;
+function dictLesson(){ var L = currentLesson(); return (L && L.cues && L.cues.length) ? L : null; }
+function playCue(i){
+  var L = dictLesson(); if(!L) return;
+  dictIdx = Math.max(0, Math.min(i, L.cues.length - 1));
+  vid.currentTime = L.cues[dictIdx][0] + state.subOffset + 0.01;
+  endStopped = false;
+  dictArmed = true;
+  vid.play();
+  document.getElementById("dictInfo").textContent = "正在放第 " + (dictIdx+1) + " / " + L.cues.length + " 句，听完在下面打出来。";
+}
+document.getElementById("dictPlay").addEventListener("click", function(){
+  if(curCueIdx >= 0) dictIdx = curCueIdx;
+  playCue(dictIdx);
+});
+document.getElementById("dictNext").addEventListener("click", function(){
+  document.getElementById("dictInput").value = "";
+  document.getElementById("dictResult").innerHTML = "";
+  playCue(dictIdx + 1);
+});
+document.getElementById("dictCheck").addEventListener("click", function(){
+  var L = dictLesson(); if(!L){ return; }
+  var ans = L.cues[dictIdx][1];
+  var ansWords = ans.split(/\s+/).map(function(t){ return cleanWord(t).toLowerCase(); }).filter(function(w){ return w; });
+  var userWords = document.getElementById("dictInput").value.split(/\s+/).map(function(t){ return cleanWord(t).toLowerCase(); }).filter(function(w){ return w; });
+  var used = {}, matched = 0, ui = 0;
+  var marks = [];
+  for(var i=0;i<ansWords.length;i++){
+    var foundAt = -1;
+    for(var j=ui;j<userWords.length;j++){ if(userWords[j] === ansWords[i] && !used[j]){ foundAt = j; break; } }
+    if(foundAt >= 0){ used[foundAt] = true; ui = foundAt + 1; matched++; marks.push(true); }
+    else { marks.push(false); }
+  }
+  var toks = ans.split(/\s+/);
+  var html = "";
+  for(var k=0;k<toks.length;k++){
+    var cw = cleanWord(toks[k]);
+    if(!cw){ html += esc(toks[k]) + " "; continue; }
+    var wi = 0, cnt = 0;
+    for(var x=0;x<=k;x++){ if(cleanWord(toks[x])) cnt++; }
+    wi = cnt - 1;
+    html += '<span class="'+(marks[wi] ? "dict-ok" : "dict-bad")+'">'+esc(toks[k])+'</span> ';
+  }
+  var pct = ansWords.length ? Math.round(matched / ansWords.length * 100) : 0;
+  document.getElementById("dictResult").innerHTML =
+    '<div class="mini" style="margin-bottom:4px;">听写正确率 <b>'+pct+'%</b>（对 '+matched+' / '+ansWords.length+' 个词）。绿 = 听对了，红 = 没听出来或拼错：</div>'
+    + '<div style="font-size:15px; line-height:1.6;">'+html+'</div>'
+    + (L.cues[dictIdx][2] ? '<div class="mini" style="margin-top:4px;">'+esc(L.cues[dictIdx][2])+'</div>' : '');
+});
+document.getElementById("dictShow").addEventListener("click", function(){
+  var L = dictLesson(); if(!L){ return; }
+  document.getElementById("dictResult").innerHTML =
+    '<div style="font-size:15px; line-height:1.6;">'+esc(L.cues[dictIdx][1])+'</div>'
+    + (L.cues[dictIdx][2] ? '<div class="mini" style="margin-top:4px;">'+esc(L.cues[dictIdx][2])+'</div>' : '');
+});
+document.getElementById("shadPlay").addEventListener("click", function(){
+  if(curCueIdx >= 0) dictIdx = curCueIdx;
+  playCue(dictIdx);
+});
+var mediaRec = null, recChunks = [], recUrl = "", recording = false;
+document.getElementById("shadRec").addEventListener("click", function(){
+  var btn = this, info = document.getElementById("shadInfo");
+  if(recording){
+    mediaRec.stop(); recording = false;
+    btn.textContent = "🎙 录我的跟读"; btn.classList.remove("on");
+    return;
+  }
+  if(!navigator.mediaDevices || !window.MediaRecorder){
+    info.textContent = "这个浏览器不支持录音，换 Chrome 打开这个页面就能录。";
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    recChunks = [];
+    mediaRec = new MediaRecorder(stream);
+    mediaRec.ondataavailable = function(e){ if(e.data.size) recChunks.push(e.data); };
+    mediaRec.onstop = function(){
+      stream.getTracks().forEach(function(t){ t.stop(); });
+      if(recUrl) URL.revokeObjectURL(recUrl);
+      recUrl = URL.createObjectURL(new Blob(recChunks, {type:"audio/webm"}));
+      document.getElementById("shadPlayRec").disabled = false;
+      info.textContent = "录好了，点「播放录音」听自己的，再点「播放原句」对比。";
+    };
+    mediaRec.start(); recording = true;
+    btn.textContent = "⏹ 停止录音"; btn.classList.add("on");
+    info.textContent = "录音中……对着手机把这句读出来，读完点停止。";
+  }).catch(function(){
+    info.textContent = "录音需要麦克风权限，允许一下就能用；不给权限也不影响其他功能。";
+  });
+});
+var recAudio = new Audio();
+document.getElementById("shadPlayRec").addEventListener("click", function(){
+  if(recUrl){ recAudio.src = recUrl; recAudio.play(); }
+});
 
 function loadLesson(L){
   var vw = document.getElementById("videoWrap"), vf = document.getElementById("videoFrame");
@@ -552,6 +751,7 @@ function render(){
   document.getElementById("streakNum").textContent = state.streak;
   document.getElementById("doneNum").textContent = doneCount;
   document.getElementById("wordNum").textContent = state.words.length;
+  document.getElementById("minNum").textContent = Math.floor((state.minutes[todayStr()] || 0) / 60);
   renderCal(); renderChart();
 
   var cur = currentLesson();
@@ -613,7 +813,18 @@ function render(){
 
   renderQuiz(cur);
   renderWordList();
+  renderFavs();
 }
+
+/* ============ 今日练习时长 ============ */
+var secSinceSave = 0;
+setInterval(function(){
+  if(!vid.paused && !vid.ended && vid.readyState > 1){
+    state.minutes[todayStr()] = (state.minutes[todayStr()] || 0) + 1;
+    secSinceSave++;
+    if(secSinceSave >= 15){ secSinceSave = 0; save(); document.getElementById("minNum").textContent = Math.floor(state.minutes[todayStr()] / 60); }
+  }
+}, 1000);
 function renderQuiz(cur){
   var box = document.getElementById("quizBox");
   if(!cur || !cur.quiz || !cur.quiz.length){
@@ -729,6 +940,7 @@ function renderWordList(){
             : (wordDue(w) ? '<span class="tag due">待复习 · '+w.box+' 盒</span>' : '<span class="tag">'+w.box+' 盒 · '+w.due.slice(5)+' 再练</span>');
     wl += '<div class="word"><span class="w">'+esc(w.word)+'</span>' + tag
         + '<div class="s">'+esc(w.sentence||"")+'</div>'
+        + (w.sZh ? '<div class="s">'+esc(w.sZh)+'</div>' : '')
         + '<div style="margin-top:6px;"><button class="btn ghost small" data-act="toggle" data-i="'+k+'">'+(w.known?"标回待复习":"标记已掌握")+'</button> '
         + '<button class="btn ghost small" data-act="del" data-i="'+k+'">删除</button></div></div>';
   }
@@ -738,7 +950,7 @@ document.getElementById("wordAdd").addEventListener("click", function(){
   var w = document.getElementById("wordInput").value.trim();
   var s = document.getElementById("wordSentence").value.trim();
   if(!w){ alert("先填单词。"); return; }
-  state.words.push({word:w, sentence:s, known:false, box:1, due:todayStr()});
+  state.words.push({word:w, sentence:s, sZh:"", known:false, box:1, due:todayStr()});
   save();
   document.getElementById("wordInput").value = "";
   document.getElementById("wordSentence").value = "";
@@ -783,7 +995,29 @@ function renderFlash(){
   document.getElementById("flashWord").textContent = w.word;
   document.getElementById("flashSent").textContent = w.sentence || "（没记原句）";
 }
-function renderReview(){ buildQueue(); renderFlash(); renderWordList(); }
+function renderFavs(){
+  var box = document.getElementById("favList");
+  if(!box) return;
+  if(!state.favs.length){
+    box.innerHTML = '<div class="hist">还没有收藏。在字幕里点句子右侧的 ☆ 就能把好句收进来，跟读时对着这里练。</div>';
+    return;
+  }
+  var html = "";
+  for(var i=state.favs.length-1;i>=0;i--){
+    var f = state.favs[i];
+    html += '<div class="word"><div style="font-size:14.5px; line-height:1.6;">'+esc(f.en)+'</div>'
+          + (f.zh ? '<div class="s">'+esc(f.zh)+'</div>' : '')
+          + '<div style="margin-top:6px;"><button class="btn ghost small" data-delfav="'+i+'">删除</button></div></div>';
+  }
+  box.innerHTML = html;
+}
+document.getElementById("favList").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-delfav]"); if(!b) return;
+  state.favs.splice(parseInt(b.getAttribute("data-delfav"),10), 1);
+  save(); renderFavs();
+  var cur = currentLesson(); if(cur) renderSubs(cur);
+});
+function renderReview(){ buildQueue(); renderFlash(); renderWordList(); renderFavs(); }
 document.getElementById("flashCard").addEventListener("click", function(){ this.classList.toggle("show"); });
 document.getElementById("flashYes").addEventListener("click", function(){
   if(!queue.length) return;
