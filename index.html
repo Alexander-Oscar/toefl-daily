@@ -80,6 +80,13 @@
   .cal .d.on{background:var(--acc2); color:#06281b; font-weight:700;}
   .cal .d.today{outline:2px solid var(--acc); outline-offset:1px;}
   .mini{font-size:12px; color:var(--dim); line-height:1.6;}
+  .video-wrap{position:relative; height:0; padding-bottom:56.25%; border-radius:12px; overflow:hidden; background:#000; margin-bottom:12px;}
+  .video-wrap iframe{position:absolute; left:0; top:0; width:100%; height:100%; border:0;}
+  .quiz{padding:10px 0; border-top:1px solid var(--line);}
+  .quiz:first-of-type{border-top:none;}
+  .quiz .qq{font-size:14px; line-height:1.6;}
+  .quiz .qa{font-size:13px; color:var(--acc2); margin-top:6px; line-height:1.6; display:none;}
+  .quiz.show .qa{display:block;}
 </style>
 </head>
 <body>
@@ -102,13 +109,18 @@
   <h2>今日讲座</h2>
   <div class="lecture-title" id="todayTitle">—</div>
   <div class="lecture-meta" id="todayMeta">—</div>
-  <a class="btn grow" id="todayLink" href="#" target="_blank" rel="noopener" style="display:block;">打开讲座（考满分）</a>
+  <div class="video-wrap" id="videoWrap" style="display:none;"><iframe id="videoFrame" src="" allowfullscreen scrolling="no"></iframe></div>
+  <div class="row">
+    <a class="btn ghost grow" id="todayLink" href="#" target="_blank" rel="noopener">在 TED 打开原页</a>
+    <a class="btn ghost grow" id="todayTranscript" href="#" target="_blank" rel="noopener">看原文稿（TED）</a>
+  </div>
   <div class="hint" id="catchupHint" style="display:none;"></div>
+  <div class="ok-note" id="lessonNote" style="display:none;"></div>
 </div>
 
 <div class="card">
   <h2>精听播放器（自备音频）</h2>
-  <div class="mini" style="margin-bottom:8px;">讲座原站的音频拿不进来；如果你有这篇的音频文件或直链，在这里放：支持变速、AB 循环逐句抠。</div>
+  <div class="mini" style="margin-bottom:8px;">TED 视频在上面的卡片里直接播。这个播放器是你手头有单独音频文件或直链时用的：变速、AB 循环逐句抠，比拖视频进度条方便。</div>
   <audio id="player" controls preload="metadata"></audio>
   <div class="row">
     <input type="text" id="audioUrl" placeholder="粘贴音频直链（mp3 地址）">
@@ -149,7 +161,8 @@
 </div>
 
 <div class="card">
-  <h2>记录做题分数</h2>
+  <h2>自测题 + 记录分数</h2>
+  <div id="quizBox"></div>
   <div class="score-row">
     <input type="number" id="scoreRight" min="0" placeholder="对">
     <span>/</span>
@@ -215,15 +228,55 @@
 <script>
 "use strict";
 /* ============ 数据 ============ */
+var TED = "https://www.ted.com/talks/";
+var EMBED = "https://embed.ted.com/talks/";
+function tedLesson(day, slug, title, topic, note, quiz){
+  return {day:day, title:title, topic:topic, url:TED+slug, embed:EMBED+slug, transcript:TED+slug+"/transcript", note:note||"", quiz:quiz||[]};
+}
 var BUILTIN = [
-  {day:1, title:"两栖动物与环境", topic:"环境科学 · 讲座", url:"https://toefl.kmf.com/detail/listen/623r7j.html"},
-  {day:2, title:"北极熊与营养级联", topic:"生态学 · 讲座", url:"https://toefl.kmf.com/detail/listen/12cthj.html"},
-  {day:3, title:"冰芯与历史气候", topic:"地球科学 · 讲座", url:"https://toefl.kmf.com/detail/listen/02de4j.html"},
-  {day:4, title:"虎鲸与行为物种形成", topic:"动物行为 · 讲座", url:"https://toefl.kmf.com/detail/listen/82ci0j.html"},
-  {day:5, title:"金星上的盾状火山", topic:"天文学 · 讲座", url:"https://toefl.kmf.com/detail/listen/51ghsj.html"}
+  tedLesson(1, "matt_cutts_try_something_new_for_30_days",
+    "30 天尝试新事物 · Matt Cutts", "TED 演讲 · 约 3 分半 · 入门",
+    "最短的一篇，先拿它把流程跑顺。第一遍关字幕只听，第二遍再开英文字幕逐句抠。",
+    [
+      {q:"他建议大家做的事是什么？", a:"挑一件一直想做没做的事，连续坚持做 30 天。"},
+      {q:"他说 30 天这个长度有什么特别？", a:"正好够长到能养成（或戒掉）一个习惯，又短到不会让人半途放弃。"},
+      {q:"他举的自己的挑战例子里包括哪件？", a:"包括 30 天写完一部 5 万字的小说（还有每天拍一张照片、骑车上班等）。"}
+    ]),
+  tedLesson(2, "david_gallo_underwater_astonishments",
+    "深海里的神奇生物 · David Gallo", "TED 演讲 · 约 5 分半 · 海洋科学",
+    "画面很强，但要求你第一遍先只听声音、不看画面，练耳朵抓信息。",
+    [
+      {q:"视频里的章鱼展示了什么本事？", a:"完美伪装——瞬间变得和周围环境一模一样，像凭空消失。"},
+      {q:"乌贼（cuttlefish）出名的是什么能力？", a:"快速改变体色和纹理，变色能力极强。"},
+      {q:"深海鱼发光（霓虹灯一样的展示）主要用来干什么？", a:"在漆黑的深海里交流、吸引猎物、伪装自己。"}
+    ]),
+  tedLesson(3, "angela_lee_duckworth_grit_the_power_of_passion_and_perseverance",
+    "毅力：热情与坚持的力量 · Angela Duckworth", "TED 演讲 · 约 6 分钟 · 心理学",
+    "研究型演讲，结构和托福讲座最像（提出问题→几组研究→结论），重点听她的转折词和结论句。",
+    [
+      {q:"她说的 grit（毅力）到底指什么？", a:"对长期目标的热情加上坚持不懈——盯着几年后的目标一直做下去。"},
+      {q:"她是在什么工作里发现 IQ 不是决定因素的？", a:"在纽约公立学校当七年级数学老师时，发现聪明的学生不一定学得好。"},
+      {q:"她的研究结论是什么？", a:"在西点军校学员、拼字比赛选手等群体里，grit 是成功的重要预测指标，比 IQ 和天赋更管用。"}
+    ]),
+  tedLesson(4, "marc_raibert_meet_spot_the_robot_dog_that_can_run_hop_and_open_doors",
+    "机器狗 Spot · Marc Raibert（波士顿动力）", "TED 演讲 · 全长约 14 分半，只练前 8 分钟",
+    "跟你的具身智能方向正对口。全长太长，只练前 8 分钟（讲设计原则和各代机器人的部分），后面的现场演示不用管。",
+    [
+      {q:"波士顿动力做机器人的三条设计原则是什么？", a:"平衡（balance）、灵巧（dexterity）、感知（perception）。"},
+      {q:"SpotMini 在现场演示里做了什么？", a:"自己绘制周围环境的地图、绕过障碍物，还按指令给 Raibert 送了一罐饮料。"},
+      {q:"Handle 这款机器人特别在哪？", a:"脚是轮子，能举起 100 磅的包裹，还能跳上桌子。"}
+    ]),
+  tedLesson(5, "markus_fischer_a_robot_that_flies_like_a_bird",
+    "像鸟一样飞的机器人 · Markus Fischer", "TED 演讲 · 约 7 分钟 · 仿生工程",
+    "讲者是德国工程师，带一点口音——正好练真实听力（托福之外的口音适应）。内容是仿生扑翼，和你的方向也对口。",
+    [
+      {q:"SmartBird 仿的是哪种鸟？", a:"海鸥（herring gull）。"},
+      {q:"它和普通无人机/飞机最大的不同是什么？", a:"靠扇动翅膀扑翼飞行，而不是螺旋桨或固定翼。"},
+      {q:"研发它的团队来自哪家公司？", a:"德国 Festo（费斯托）公司的团队。"}
+    ])
 ];
 var PHASES = [
-  {min:15, name:"精听", desc:"先盲听一遍抓大意；再一句一句听，听不出的看原文那句、倒回去重听；最后做题。"},
+  {min:15, name:"精听", desc:"先关字幕把视频听一遍抓大意；再开英文字幕一句一句抠，听不出的看 TED 原文稿那句、倒回去重听；最后做下面的自测题。"},
   {min:10, name:"生词", desc:"把「看了认识、听时没反应过来」的词连原句记进下面的生词本，只收这类词。"},
   {min:5,  name:"跟读", desc:"挑讲座里 30 秒到 1 分钟，音频放一句、你跟一句，模仿语调和连读。"}
 ];
@@ -279,9 +332,17 @@ function render(){
   var cur = currentLesson();
   if(cur){
     document.getElementById("todayTitle").textContent = "Day " + cur.day + " · " + cur.title;
-    document.getElementById("todayMeta").textContent = cur.topic + " · 考满分 ETS 官方真题";
+    document.getElementById("todayMeta").textContent = cur.topic + " · TED 官方演讲，免费，带原文稿";
     var a = document.getElementById("todayLink");
-    a.href = cur.url; a.style.display = "block"; a.textContent = "打开讲座（考满分）";
+    a.href = cur.url; a.textContent = "在 TED 打开原页";
+    var vw = document.getElementById("videoWrap");
+    var vf = document.getElementById("videoFrame");
+    if(cur.embed){ vw.style.display = "block"; if(vf.getAttribute("src") !== cur.embed) vf.src = cur.embed; }
+    else { vw.style.display = "none"; vf.src = ""; }
+    var tt = document.getElementById("todayTranscript");
+    if(cur.transcript){ tt.style.display = ""; tt.href = cur.transcript; } else { tt.style.display = "none"; }
+    var ln = document.getElementById("lessonNote");
+    if(cur.note){ ln.style.display = "block"; ln.textContent = cur.note; } else { ln.style.display = "none"; }
     var hint = document.getElementById("catchupHint");
     if(cur.day > 1 && doneCount < cur.day - 1){
       hint.style.display = "block";
@@ -289,8 +350,11 @@ function render(){
     } else { hint.style.display = "none"; }
   } else {
     document.getElementById("todayTitle").textContent = "已排的讲座都练完了 🎉";
-    document.getElementById("todayMeta").textContent = "可以在下面课程表里自己加新讲座，或跟 Muse 要下一篇。";
+    document.getElementById("todayMeta").textContent = "可以在下面课程表里自己加新讲座（粘 TED 链接会自动内嵌），或跟 Muse 要下一篇。";
     document.getElementById("todayLink").style.display = "none";
+    document.getElementById("todayTranscript").style.display = "none";
+    document.getElementById("videoWrap").style.display = "none";
+    document.getElementById("lessonNote").style.display = "none";
     document.getElementById("catchupHint").style.display = "none";
   }
 
@@ -337,8 +401,23 @@ function render(){
   }
   document.getElementById("lessonList").innerHTML = ll;
 
+  renderQuiz(cur);
   buildQueue();
   renderFlash();
+}
+function renderQuiz(cur){
+  var box = document.getElementById("quizBox");
+  if(!cur || !cur.quiz || !cur.quiz.length){
+    box.innerHTML = '<div class="mini" style="margin-bottom:8px;">这一篇没有配自测题，练完按自己的理解程度记分，或直接点「保存并完成今天」时总题数填 3、按答对的感觉给分。</div>';
+    return;
+  }
+  var html = '<div class="mini" style="margin-bottom:4px;">Day ' + cur.day + ' 自测题（先口头回答，再点题目看答案对照）：</div>';
+  for(var i=0;i<cur.quiz.length;i++){
+    html += '<div class="quiz" data-quiz="'+i+'"><div class="qq">'+(i+1)+'. '+esc(cur.quiz[i].q)+'</div><div class="qa">参考答案：'+esc(cur.quiz[i].a)+'</div></div>';
+  }
+  box.innerHTML = html;
+  var total = document.getElementById("scoreTotal");
+  if(!total.value) total.value = cur.quiz.length;
 }
 function esc(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
@@ -443,6 +522,10 @@ document.getElementById("setB").addEventListener("click", function(){ abB = play
 document.getElementById("clearAB").addEventListener("click", function(){ abA = abB = null; abShow(); });
 player.addEventListener("timeupdate", function(){
   if(abA!==null && abB!==null && player.currentTime >= abB){ player.currentTime = abA; }
+});
+
+document.getElementById("quizBox").addEventListener("click", function(e){
+  var q = e.target.closest(".quiz"); if(q) q.classList.toggle("show");
 });
 
 /* ============ 分数 ============ */
@@ -551,7 +634,10 @@ document.getElementById("lessonAdd").addEventListener("click", function(){
   if(u.indexOf("http") !== 0){ alert("链接要以 http 开头，检查一下有没有粘全。"); return; }
   var list = allLessons();
   var nextDay = list.length ? list[list.length-1].day + 1 : 1;
-  state.customLessons.push({day:nextDay, title:t, topic:tp || "讲座", url:u, custom:true});
+  var embed = "", transcript = "";
+  var mm = u.match(/ted\.com\/talks\/([a-z0-9_]+)/i);
+  if(mm){ embed = "https://embed.ted.com/talks/" + mm[1]; transcript = "https://www.ted.com/talks/" + mm[1] + "/transcript"; }
+  state.customLessons.push({day:nextDay, title:t, topic:tp || "讲座", url:u, embed:embed, transcript:transcript, note:"", quiz:[], custom:true});
   save();
   document.getElementById("newTitle").value = "";
   document.getElementById("newTopic").value = "";
