@@ -44,8 +44,13 @@
   .video-wrap iframe{position:absolute; left:0; top:0; width:100%; height:100%; border:0;}
   .ctl{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
   .ctl .btn{flex:1; padding:10px 6px; font-size:13px; white-space:nowrap;}
+  /* 播放器吸顶：看字幕时视频钉在顶部 */
+  .sticky-player{position:sticky; top:0; z-index:30; background:var(--surface);
+    padding:8px 2px 10px; margin:0 -2px; box-shadow:0 10px 14px -12px rgba(0,0,0,.25);}
+  .subs-head{font-size:15px; font-weight:600; margin:14px 0 6px;}
+  .subs-head span{font-size:12px; color:var(--dim); font-weight:400; margin-left:6px;}
   /* 字幕区 */
-  .subs{height:300px; overflow-y:auto; padding:4px 2px; scroll-behavior:smooth;}
+  .subs{height:46vh; overflow-y:auto; padding:4px 2px; scroll-behavior:smooth;}
   .cue{padding:9px 10px; border-radius:12px; cursor:pointer; border-left:3px solid transparent;}
   .cue + .cue{margin-top:2px;}
   .cue.cur{background:var(--chip); border-left-color:var(--acc);}
@@ -77,6 +82,13 @@
   .chip.on{background:var(--txt); color:#fff;}
   .flash .fw.sent{font-size:18.5px; font-weight:600; line-height:1.65; text-align:left;}
   .flash .fw .blank{color:var(--acc); letter-spacing:2px;}
+  .sumrow{display:flex; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); align-items:baseline;}
+  .sumrow:last-child{border-bottom:none;}
+  .sumrow .sw{font-weight:700; min-width:92px;}
+  .sumrow .sphon{color:var(--faint); font-size:12px; white-space:nowrap;}
+  .sumrow .sdef{flex:1; font-size:13.5px; line-height:1.55;}
+  .sumrow .szh{color:var(--dim); font-size:12.5px;}
+  .sumrow .pend{color:var(--faint);}
   .dict-ok{color:var(--acc2); font-weight:600;}
   .dict-bad{color:var(--bad); font-weight:600; text-decoration:underline;}
   .timer{font-size:46px; font-weight:700; text-align:center; letter-spacing:-.02em; margin:6px 0 2px; font-variant-numeric:tabular-nums;}
@@ -150,25 +162,33 @@
   <div class="card">
     <div class="lecture-meta" id="todayMeta" style="margin-bottom:2px;">今日演讲</div>
     <div class="lecture-title" id="todayTitle">—</div>
-    <video class="main" id="vid" controls playsinline preload="metadata"></video>
-    <div class="video-wrap" id="videoWrap" style="display:none;"><iframe id="videoFrame" src="" allowfullscreen scrolling="no"></iframe></div>
-    <div class="livecap" id="liveCap"><div class="lc-en" id="liveCapEn">点播放，正在说的这一句会实时出现在这里</div><div class="lc-zh" id="liveCapZh"></div></div>
-    <div class="hint" id="vidHint" style="display:none;">视频加载有点慢（TED 服务器在国外）。可以多等几秒，或点下面按钮换成 TED 内嵌播放器看（内嵌模式下字幕没法实时同步）。<br><button class="btn ghost small" id="useEmbedBtn" style="margin-top:8px;">切换内嵌播放器</button></div>
-    <div class="ctl">
-      <button class="btn ghost" id="back5v">⏪ 5 秒</button>
-      <button class="btn ghost" id="loopCue">循环本句</button>
-      <button class="btn ghost" id="speedBtn">1× 速度</button>
-      <button class="btn ghost" id="fwd5v">5 秒 ⏩</button>
+    <div class="sticky-player">
+      <video class="main" id="vid" controls playsinline preload="metadata"></video>
+      <div class="video-wrap" id="videoWrap" style="display:none;"><iframe id="videoFrame" src="" allowfullscreen scrolling="no"></iframe></div>
+      <div class="livecap" id="liveCap"><div class="lc-en" id="liveCapEn">点播放，正在说的这一句会实时出现在这里</div><div class="lc-zh" id="liveCapZh"></div></div>
+      <div class="hint" id="vidHint" style="display:none;">视频加载有点慢（TED 服务器在国外）。可以多等几秒，或点下面按钮换成 TED 内嵌播放器看（内嵌模式下字幕没法实时同步）。<br><button class="btn ghost small" id="useEmbedBtn" style="margin-top:8px;">切换内嵌播放器</button></div>
+      <div class="ctl">
+        <button class="btn ghost" id="back5v">⏪ 5 秒</button>
+        <button class="btn ghost" id="loopCue">循环本句</button>
+        <button class="btn ghost" id="speedBtn">1× 速度</button>
+        <button class="btn ghost" id="fwd5v">5 秒 ⏩</button>
+      </div>
+      <div class="ctl">
+        <button class="btn ghost modeBtn" data-mode="0">盲听</button>
+        <button class="btn on modeBtn" data-mode="1">只英文</button>
+        <button class="btn ghost modeBtn" data-mode="2">英 + 中</button>
+        <button class="btn ghost modeBtn" data-mode="3">只中文</button>
+        <button class="btn ghost" id="loopAllBtn">全文循环</button>
+        <button class="btn ghost" id="sleepBtn">定时关闭</button>
+      </div>
     </div>
-    <div class="ctl">
-      <button class="btn ghost modeBtn" data-mode="0">盲听</button>
-      <button class="btn on modeBtn" data-mode="1">只英文</button>
-      <button class="btn ghost modeBtn" data-mode="2">英 + 中</button>
-      <button class="btn ghost modeBtn" data-mode="3">只中文</button>
-    </div>
-    <div class="ctl">
-      <button class="btn ghost" id="loopAllBtn">全文循环</button>
-      <button class="btn ghost" id="sleepBtn">定时关闭</button>
+    <div class="subs-head">实时字幕 <span>点句子跳到那里播 · 点单词标记生词 · ☆ 收藏好句</span></div>
+    <div class="subs" id="subsBox"><div class="mini">这一篇的同步字幕在加载后显示。</div></div>
+    <div class="row" style="margin-top:10px;">
+      <span class="mini grow">字幕和声音对不齐时微调</span>
+      <button class="btn ghost small" id="offMinus">提前 0.5 秒</button>
+      <span class="mini" id="offVal" style="min-width:64px; text-align:center;">偏移 0.0s</span>
+      <button class="btn ghost small" id="offPlus">延后 0.5 秒</button>
     </div>
     <div class="row" style="margin-top:10px;">
       <a class="btn ghost small grow" id="todayLink" href="#" target="_blank" rel="noopener">TED 原页</a>
@@ -177,18 +197,6 @@
     <div class="hint" id="catchupHint" style="display:none;"></div>
     <div class="ok-note" id="lessonNote" style="display:none;"></div>
     <button class="btn ghost small" id="exitReview" style="display:none; margin-top:10px;">← 回到今日课程</button>
-  </div>
-
-  <div class="card">
-    <h2>实时字幕 <span class="mini">点句子跳到那里播 · 点单词标记生词</span></h2>
-    <div class="subs" id="subsBox"><div class="mini">这一篇的同步字幕在加载后显示。</div></div>
-    <div class="row" style="margin-top:10px;">
-      <span class="mini grow">字幕和声音对不齐时微调</span>
-      <button class="btn ghost small" id="offMinus">提前 0.5 秒</button>
-      <span class="mini" id="offVal" style="min-width:64px; text-align:center;">偏移 0.0s</span>
-      <button class="btn ghost small" id="offPlus">延后 0.5 秒</button>
-    </div>
-    <div class="mini" style="margin-top:8px;">第一遍用「只英文」，听不懂的词点一下存生词本；第二遍切「英 + 中」对照中文释义；想测真实水平切「盲听」。点句子右侧 ☆ 收藏好句。</div>
   </div>
 
   <div class="card">
@@ -281,6 +289,12 @@
     <textarea id="wordSentence" rows="2" placeholder="它在演讲里的原句（粘过来就行）" style="margin-top:8px;"></textarea>
     <button class="btn grow" id="wordAdd" style="width:100%; margin-top:10px;">加入生词本</button>
     <div id="wordList" style="margin-top:6px;"></div>
+  </div>
+
+  <div class="card">
+    <h2>全部生词汇总 <span class="mini">词和意思一一对应 · 按字母排</span></h2>
+    <div id="sumList"></div>
+    <button class="btn ghost small" id="copySum" style="margin-top:10px;">复制汇总（词 — 意思）</button>
   </div>
 </div>
 
@@ -698,6 +712,7 @@ function toggleWord(word, sentence, zh){
   if(found >= 0){ state.words.splice(found,1); }
   else { state.words.push({word:word, sentence:sentence, sZh:zh||"", known:false, box:1, due:todayStr()}); }
   save();
+  if(found < 0) fetchDef(state.words[state.words.length-1]);
   var spans = subsBox.querySelectorAll(".w");
   for(var j=0;j<spans.length;j++){
     if(spans[j].getAttribute("data-w").toLowerCase() === lw) spans[j].classList.toggle("marked", found < 0);
@@ -1110,7 +1125,54 @@ function renderWordList(){
         + '<button class="btn ghost small" data-act="del" data-i="'+k2+'">删除</button></div></div>';
   }
   document.getElementById("wordList").innerHTML = wl || '<div class="hist" style="margin-top:8px;">'+(state.words.length ? "这个筛选下没有词。" : "还是空的。练习时在字幕里点单词就能存进来。")+'</div>';
+  renderSummary();
 }
+var defTried = {};
+function fetchDef(entry){
+  var key = entry.word.toLowerCase();
+  if(entry.def || defTried[key]) return;
+  defTried[key] = true;
+  fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(entry.word))
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      try{
+        if(j && j[0] && j[0].meanings && j[0].meanings[0].definitions && j[0].meanings[0].definitions[0]){
+          entry.def = j[0].meanings[0].definitions[0].definition;
+          if(j[0].phonetic) entry.phon = j[0].phonetic;
+          save(); renderSummary(); renderWordList();
+        }
+      }catch(e){}
+    }).catch(function(){});
+}
+function renderSummary(){
+  var el = document.getElementById("sumList");
+  if(!el) return;
+  if(!state.words.length){ el.innerHTML = '<div class="hist">还没有生词。在练习页点字幕里的单词，选定的词会自动汇总到这里。</div>'; return; }
+  var arr = state.words.slice().sort(function(a,b){ return a.word.toLowerCase() < b.word.toLowerCase() ? -1 : 1; });
+  var html = "", need = [];
+  for(var i=0;i<arr.length;i++){
+    var w = arr[i];
+    html += '<div class="sumrow"><span class="sw">'+esc(w.word)+'</span>'
+      + (w.phon ? '<span class="sphon">'+esc(w.phon)+'</span>' : '')
+      + '<span class="sdef">'+(w.def ? esc(w.def) : '<span class="pend">释义补充中…</span>')
+      + (w.sZh ? '<br><span class="szh">'+esc(w.sZh)+'</span>' : '')+'</span></div>';
+    if(!w.def && need.length < 8) need.push(w);
+  }
+  el.innerHTML = html;
+  for(var n=0;n<need.length;n++) fetchDef(need[n]);
+}
+document.getElementById("copySum").addEventListener("click", function(){
+  var arr = state.words.slice().sort(function(a,b){ return a.word.toLowerCase() < b.word.toLowerCase() ? -1 : 1; });
+  var lines = [];
+  for(var i=0;i<arr.length;i++){
+    var w = arr[i];
+    lines.push(w.word + (w.phon ? " " + w.phon : "") + " — " + (w.def || "") + (w.sZh ? "｜" + w.sZh : ""));
+  }
+  var btn = this;
+  function done(){ btn.textContent = "已复制 ✔"; setTimeout(function(){ btn.textContent = "复制汇总（词 — 意思）"; }, 1600); }
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(lines.join("\n")).then(done).catch(done); }
+  else done();
+});
 var wfChips = document.querySelectorAll(".chip[data-wf]");
 for(var wc=0; wc<wfChips.length; wc++){
   wfChips[wc].addEventListener("click", function(){
@@ -1129,6 +1191,7 @@ document.getElementById("wordAdd").addEventListener("click", function(){
   if(!w){ alert("先填单词。"); return; }
   state.words.push({word:w, sentence:s, sZh:"", known:false, box:1, due:todayStr()});
   save();
+  fetchDef(state.words[state.words.length-1]);
   document.getElementById("wordInput").value = "";
   document.getElementById("wordSentence").value = "";
   render();
