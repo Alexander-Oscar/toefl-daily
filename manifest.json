@@ -1,1 +1,1 @@
-{"background_color":"#0f1420","display":"standalone","icons":[{"purpose":"any","sizes":"any","src":"icon.svg","type":"image/svg+xml"}],"name":"英语每日 30 分钟 · 托福精听","scope":"./","short_name":"英语精听","start_url":"./index.html","theme_color":"#0f1420"}
+{"background_color": "#f5f5f7", "display": "standalone", "icons": [{"purpose": "any", "sizes": "any", "src": "icon.svg", "type": "image/svg+xml"}], "name": "英语每日 30 分钟 · 托福精听", "scope": "./", "short_name": "英语精听", "start_url": "./index.html", "theme_color": "#f5f5f7"}

@@ -5,238 +5,310 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>英语每日 30 分钟 · 托福精听</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f1420">
+<meta name="theme-color" content="#f5f5f7">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
   :root{
-    --bg:#0f1420; --card:#1a2233; --card2:#222d44; --line:#2e3a55;
-    --txt:#eef2fa; --dim:#9fb0cc; --acc:#4da3ff; --acc2:#37d99a; --warn:#ffb84d; --bad:#ff6b6b;
-    --radius:16px;
+    --bg:#f5f5f7; --surface:#ffffff; --txt:#1d1d1f; --dim:#6e6e73; --faint:#86868b;
+    --acc:#0071e3; --acc2:#248a3d; --warn:#b25e09; --bad:#d70015;
+    --line:#e3e3e6; --chip:#f5f5f7; --hl:#fff3bf;
+    --radius:18px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{margin:0; background:var(--bg); color:var(--txt);
-    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
-    padding:16px 14px 40px; max-width:560px; margin:0 auto;}
-  h1{font-size:21px; margin:6px 0 2px;}
-  .sub{color:var(--dim); font-size:13px; margin-bottom:14px;}
-  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:14px;}
-  .card h2{font-size:16px; margin:0 0 10px;}
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+    padding:28px 18px 110px; max-width:680px; margin:0 auto; -webkit-font-smoothing:antialiased;}
+  h1{font-size:28px; font-weight:700; letter-spacing:-.02em; margin:0 0 4px;}
+  .sub{color:var(--dim); font-size:14px; margin-bottom:20px;}
+  .card{background:var(--surface); border-radius:var(--radius); padding:20px; margin-bottom:16px;
+    box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .card h2{font-size:17px; font-weight:600; margin:0 0 12px; letter-spacing:-.01em;}
   .row{display:flex; gap:10px; align-items:center;}
   .grow{flex:1;}
-  .btn{display:inline-block; border:none; border-radius:12px; padding:12px 16px; font-size:15px;
-    background:var(--acc); color:#fff; text-decoration:none; text-align:center; cursor:pointer; font-weight:600;}
-  .btn.green{background:var(--acc2); color:#06281b;}
-  .btn.red{background:var(--bad); color:#fff;}
-  .btn.ghost{background:var(--card2); color:var(--txt); border:1px solid var(--line); font-weight:500;}
-  .btn.small{padding:8px 12px; font-size:13px; border-radius:10px;}
-  .btn.on{outline:2px solid var(--acc); outline-offset:1px;}
-  .btn:disabled{opacity:.45;}
+  .btn{display:inline-block; border:none; border-radius:980px; padding:11px 18px; font-size:15px;
+    background:var(--acc); color:#fff; text-decoration:none; text-align:center; cursor:pointer; font-weight:500;}
+  .btn.green{background:var(--acc2);}
+  .btn.red{background:var(--bad);}
+  .btn.ghost{background:var(--chip); color:var(--txt); font-weight:500;}
+  .btn.small{padding:8px 14px; font-size:13px;}
+  .btn.on{background:var(--txt); color:#fff;}
+  .btn:disabled{opacity:.4;}
   .stat{display:flex; gap:10px;}
-  .stat .box{flex:1; background:var(--card2); border-radius:12px; padding:10px; text-align:center;}
-  .stat .num{font-size:22px; font-weight:700;}
+  .stat .box{flex:1; text-align:center; padding:6px 0;}
+  .stat .num{font-size:26px; font-weight:700; letter-spacing:-.02em;}
   .stat .lab{font-size:12px; color:var(--dim); margin-top:2px;}
-  .lecture-title{font-size:17px; font-weight:700; margin:2px 0 4px;}
-  .lecture-meta{color:var(--dim); font-size:13px; margin-bottom:12px;}
+  .lecture-title{font-size:20px; font-weight:700; letter-spacing:-.01em; margin:2px 0 4px; line-height:1.3;}
+  .lecture-meta{color:var(--dim); font-size:13px; margin-bottom:14px;}
+  video.main{width:100%; border-radius:12px; background:#000; display:block; aspect-ratio:16/9;}
+  .video-wrap{position:relative; border-radius:12px; overflow:hidden; background:#000; aspect-ratio:16/9;}
+  .video-wrap iframe{position:absolute; left:0; top:0; width:100%; height:100%; border:0;}
+  .ctl{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .ctl .btn{flex:1; padding:10px 6px; font-size:13px; white-space:nowrap;}
+  /* 字幕区 */
+  .subs{height:300px; overflow-y:auto; padding:4px 2px; scroll-behavior:smooth;}
+  .cue{padding:9px 10px; border-radius:12px; cursor:pointer; border-left:3px solid transparent;}
+  .cue + .cue{margin-top:2px;}
+  .cue.cur{background:var(--chip); border-left-color:var(--acc);}
+  .cue .en{font-size:16.5px; line-height:1.55;}
+  .cue .zh{font-size:13.5px; color:var(--dim); line-height:1.5; margin-top:3px; display:none;}
+  .pass2 .cue .zh{display:block;}
+  .cue .en .w{border-radius:4px; padding:0 1px;}
+  .cue .en .w:active{background:#e8e8ed;}
+  .cue .en .w.marked{background:var(--hl); box-shadow:inset 0 -2px 0 #e6c619;}
+  .timer{font-size:46px; font-weight:700; text-align:center; letter-spacing:-.02em; margin:6px 0 2px; font-variant-numeric:tabular-nums;}
+  .timer-lab{text-align:center; color:var(--dim); font-size:13px; margin-bottom:12px;}
   .phase{display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--line);}
   .phase:first-of-type{border-top:none;}
-  .phase .no{width:26px; height:26px; border-radius:50%; background:var(--card2); color:var(--dim);
-    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex:none; margin-top:2px;}
+  .phase .no{width:24px; height:24px; border-radius:50%; background:var(--chip); color:var(--dim);
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex:none; margin-top:2px;}
   .phase.active .no{background:var(--acc); color:#fff;}
-  .phase.done .no{background:var(--acc2); color:#06281b;}
+  .phase.done .no{background:var(--acc2); color:#fff;}
   .phase .pt{font-weight:600; font-size:15px;}
-  .phase .pd{color:var(--dim); font-size:13px; margin-top:2px; line-height:1.5;}
-  .timer{font-size:44px; font-weight:800; text-align:center; letter-spacing:1px; margin:8px 0 4px; font-variant-numeric:tabular-nums;}
-  .timer-lab{text-align:center; color:var(--dim); font-size:13px; margin-bottom:10px;}
+  .phase .pd{color:var(--dim); font-size:13px; margin-top:2px; line-height:1.55;}
   input[type=number], input[type=text], textarea{
-    width:100%; background:var(--card2); border:1px solid var(--line); border-radius:10px;
-    color:var(--txt); padding:11px 12px; font-size:15px; outline:none;}
-  input:focus, textarea:focus{border-color:var(--acc);}
+    width:100%; background:var(--chip); border:1px solid transparent; border-radius:12px;
+    color:var(--txt); padding:12px; font-size:15px; outline:none;}
+  input:focus, textarea:focus{border-color:var(--acc); background:#fff;}
   .score-row{display:flex; gap:8px; align-items:center;}
   .score-row input{width:70px; text-align:center;}
   .hist{font-size:13px; color:var(--dim); line-height:1.9;}
   .hist b{color:var(--txt);}
-  .word{padding:10px 0; border-top:1px solid var(--line);}
+  .word{padding:11px 0; border-top:1px solid var(--line);}
   .word:first-of-type{border-top:none;}
-  .word .w{font-size:16px; font-weight:700;}
-  .word .s{color:var(--dim); font-size:13px; margin-top:2px; line-height:1.5;}
-  .tag{display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; background:var(--card2); color:var(--dim); margin-left:8px; vertical-align:2px;}
-  .tag.ok{background:rgba(55,217,154,.15); color:var(--acc2);}
-  .tag.due{background:rgba(255,184,77,.15); color:var(--warn);}
-  .hint{font-size:13px; color:var(--warn); margin-top:8px; line-height:1.6;}
-  .ok-note{font-size:13px; color:var(--acc2); margin-top:8px; line-height:1.6;}
-  .lesson{display:flex; gap:10px; align-items:center; padding:11px 0; border-top:1px solid var(--line);}
+  .word .w{font-size:16px; font-weight:600;}
+  .word .s{color:var(--dim); font-size:13px; margin-top:2px; line-height:1.55;}
+  .tag{display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; background:var(--chip); color:var(--dim); margin-left:8px; vertical-align:2px;}
+  .tag.ok{background:rgba(36,138,61,.12); color:var(--acc2);}
+  .tag.due{background:rgba(178,94,9,.12); color:var(--warn);}
+  .hint{font-size:13px; color:var(--warn); margin-top:10px; line-height:1.6;}
+  .ok-note{font-size:13px; color:var(--acc2); margin-top:10px; line-height:1.6;}
+  .lesson{display:flex; gap:10px; align-items:center; padding:12px 0; border-top:1px solid var(--line);}
   .lesson:first-of-type{border-top:none;}
-  .lesson .lt{font-weight:600; font-size:14px;}
+  .lesson .lt{font-weight:600; font-size:14.5px;}
   .lesson .lm{color:var(--dim); font-size:12px; margin-top:1px;}
-  .foot{color:var(--dim); font-size:12px; text-align:center; line-height:1.7; margin-top:6px;}
-  .flash{min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    background:var(--card2); border-radius:12px; padding:18px; text-align:center; cursor:pointer;}
-  .flash .fw{font-size:24px; font-weight:800;}
-  .flash .fs{color:var(--dim); font-size:14px; margin-top:8px; line-height:1.6; display:none;}
+  .foot{color:var(--faint); font-size:12px; text-align:center; line-height:1.7; margin-top:8px;}
+  .flash{min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:var(--chip); border-radius:14px; padding:20px; text-align:center; cursor:pointer;}
+  .flash .fw{font-size:26px; font-weight:700;}
+  .flash .fs{color:var(--dim); font-size:14px; margin-top:10px; line-height:1.6; display:none;}
   .flash.show .fs{display:block;}
-  audio{width:100%; margin:4px 0 10px;}
-  .cal{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:6px;}
-  .cal .d{aspect-ratio:1; border-radius:8px; background:var(--card2); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--dim);}
-  .cal .d.on{background:var(--acc2); color:#06281b; font-weight:700;}
-  .cal .d.today{outline:2px solid var(--acc); outline-offset:1px;}
-  .mini{font-size:12px; color:var(--dim); line-height:1.6;}
-  .video-wrap{position:relative; height:0; padding-bottom:56.25%; border-radius:12px; overflow:hidden; background:#000; margin-bottom:12px;}
-  .video-wrap iframe{position:absolute; left:0; top:0; width:100%; height:100%; border:0;}
-  .quiz{padding:10px 0; border-top:1px solid var(--line);}
+  .quiz{padding:10px 0; border-top:1px solid var(--line); cursor:pointer;}
   .quiz:first-of-type{border-top:none;}
-  .quiz .qq{font-size:14px; line-height:1.6;}
-  .quiz .qa{font-size:13px; color:var(--acc2); margin-top:6px; line-height:1.6; display:none;}
+  .quiz .qq{font-size:14.5px; line-height:1.6;}
+  .quiz .qa{font-size:13.5px; color:var(--acc2); margin-top:6px; line-height:1.6; display:none;}
   .quiz.show .qa{display:block;}
+  .cal{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:8px;}
+  .cal .d{aspect-ratio:1; border-radius:9px; background:var(--chip); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--dim);}
+  .cal .d.on{background:var(--acc2); color:#fff; font-weight:700;}
+  .cal .d.today{outline:2px solid var(--acc); outline-offset:1px;}
+  .mini{font-size:12.5px; color:var(--dim); line-height:1.65;}
+  audio{width:100%; margin:4px 0 10px;}
+  /* 底部导航 */
+  .tabbar{position:fixed; left:0; right:0; bottom:0; z-index:50;
+    background:rgba(251,251,253,.82); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border-top:1px solid var(--line); display:flex; padding:8px 10px calc(8px + env(safe-area-inset-bottom));}
+  .tabbar button{flex:1; border:none; background:none; font-size:12px; color:var(--faint); cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 0; font-weight:500;}
+  .tabbar button .ic{font-size:19px; line-height:1;}
+  .tabbar button.on{color:var(--acc);}
+  .view{display:none;}
+  .view.on{display:block;}
 </style>
 </head>
 <body>
 
 <h1>英语每日 30 分钟</h1>
-<div class="sub">托福目标约 105 · 一篇讲座吃透：精听 → 生词 → 跟读</div>
+<div class="sub">托福目标约 105 · 一篇 TED 吃透：精听 → 生词 → 跟读</div>
 
-<div class="card">
-  <div class="stat">
-    <div class="box"><div class="num" id="streakNum">0</div><div class="lab">连续天数</div></div>
-    <div class="box"><div class="num" id="doneNum">0</div><div class="lab">已完成讲座</div></div>
-    <div class="box"><div class="num" id="wordNum">0</div><div class="lab">生词本</div></div>
-  </div>
-  <div class="cal" id="calGrid"></div>
-  <div class="mini" style="margin-top:6px;">最近 4 周打卡（绿 = 当天练过）</div>
-  <div id="chartWrap" style="margin-top:12px;"></div>
-</div>
+<!-- ============ 练习 ============ -->
+<div class="view on" id="view-practice">
 
-<div class="card">
-  <h2>今日讲座</h2>
-  <div class="lecture-title" id="todayTitle">—</div>
-  <div class="lecture-meta" id="todayMeta">—</div>
-  <div class="video-wrap" id="videoWrap" style="display:none;"><iframe id="videoFrame" src="" allowfullscreen scrolling="no"></iframe></div>
-  <div class="row">
-    <a class="btn ghost grow" id="todayLink" href="#" target="_blank" rel="noopener">在 TED 打开原页</a>
-    <a class="btn ghost grow" id="todayTranscript" href="#" target="_blank" rel="noopener">看原文稿（TED）</a>
+  <div class="card">
+    <div class="lecture-meta" id="todayMeta" style="margin-bottom:2px;">今日演讲</div>
+    <div class="lecture-title" id="todayTitle">—</div>
+    <video class="main" id="vid" controls playsinline preload="metadata"></video>
+    <div class="video-wrap" id="videoWrap" style="display:none;"><iframe id="videoFrame" src="" allowfullscreen scrolling="no"></iframe></div>
+    <div class="ctl">
+      <button class="btn ghost" id="back5v">⏪ 5 秒</button>
+      <button class="btn ghost" id="loopCue">循环本句</button>
+      <button class="btn ghost" id="speedBtn">1× 速度</button>
+      <button class="btn ghost" id="fwd5v">5 秒 ⏩</button>
+    </div>
+    <div class="ctl">
+      <button class="btn on" id="pass1Btn">第一遍 · 只看英文</button>
+      <button class="btn ghost" id="pass2Btn">第二遍 · 英文 + 中文</button>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <a class="btn ghost small grow" id="todayLink" href="#" target="_blank" rel="noopener">TED 原页</a>
+      <a class="btn ghost small grow" id="todayTranscript" href="#" target="_blank" rel="noopener">TED 原文稿</a>
+    </div>
+    <div class="hint" id="catchupHint" style="display:none;"></div>
+    <div class="ok-note" id="lessonNote" style="display:none;"></div>
   </div>
-  <div class="hint" id="catchupHint" style="display:none;"></div>
-  <div class="ok-note" id="lessonNote" style="display:none;"></div>
-</div>
 
-<div class="card">
-  <h2>精听播放器（自备音频）</h2>
-  <div class="mini" style="margin-bottom:8px;">TED 视频在上面的卡片里直接播。这个播放器是你手头有单独音频文件或直链时用的：变速、AB 循环逐句抠，比拖视频进度条方便。</div>
-  <audio id="player" controls preload="metadata"></audio>
-  <div class="row">
-    <input type="text" id="audioUrl" placeholder="粘贴音频直链（mp3 地址）">
-    <button class="btn small" id="audioLoad">加载</button>
+  <div class="card">
+    <h2>实时字幕 <span class="mini">点句子跳到那里播 · 点单词标记生词</span></h2>
+    <div class="subs" id="subsBox"><div class="mini">这一篇的同步字幕在加载后显示。</div></div>
+    <div class="row" style="margin-top:10px;">
+      <span class="mini grow">字幕和声音对不齐时微调</span>
+      <button class="btn ghost small" id="offMinus">提前 0.5 秒</button>
+      <span class="mini" id="offVal" style="min-width:64px; text-align:center;">偏移 0.0s</span>
+      <button class="btn ghost small" id="offPlus">延后 0.5 秒</button>
+    </div>
+    <div class="mini" style="margin-top:8px;">第一遍：只显示英文，听不懂的词直接点一下就存进生词本。第二遍：切到「第二遍」模式，每句英文下面会给出中文释义。</div>
   </div>
-  <div class="row" style="margin-top:8px;">
-    <label class="btn ghost small grow" style="text-align:center;">选本地音频文件<input type="file" id="audioFile" accept="audio/*" style="display:none;"></label>
-  </div>
-  <div class="row" style="margin-top:10px;">
-    <button class="btn ghost small grow" id="back5">⏪ 5 秒</button>
-    <button class="btn ghost small grow" id="fwd5">5 秒 ⏩</button>
-  </div>
-  <div class="row" style="margin-top:8px;">
-    <button class="btn ghost small grow rateBtn" data-rate="0.75">0.75×</button>
-    <button class="btn ghost small grow rateBtn on" data-rate="1">1×</button>
-    <button class="btn ghost small grow rateBtn" data-rate="1.25">1.25×</button>
-  </div>
-  <div class="row" style="margin-top:8px;">
-    <button class="btn ghost small grow" id="setA">设 A 点</button>
-    <button class="btn ghost small grow" id="setB">设 B 点</button>
-    <button class="btn ghost small grow" id="clearAB">清除 AB</button>
-  </div>
-  <div class="mini" id="abInfo" style="margin-top:6px;">AB 未设置。在句子开头点「设 A 点」、结尾点「设 B 点」，就会自动循环这一句。</div>
-</div>
 
-<div class="card">
-  <h2>三步流程 + 计时器</h2>
-  <div id="phases"></div>
-  <div class="timer" id="timerText">15:00</div>
-  <div class="timer-lab" id="timerLab">第 1 步 · 精听</div>
-  <div class="row">
-    <button class="btn grow" id="timerBtn">开始</button>
-    <button class="btn ghost" id="timerReset">重置本段</button>
+  <div class="card">
+    <h2>三步流程 + 计时器</h2>
+    <div id="phases"></div>
+    <div class="timer" id="timerText">15:00</div>
+    <div class="timer-lab" id="timerLab">第 1 步 · 精听</div>
+    <div class="row">
+      <button class="btn grow" id="timerBtn">开始</button>
+      <button class="btn ghost" id="timerReset">重置本段</button>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn ghost grow" id="phaseDone">这一步做完了 → 下一步</button>
+    </div>
   </div>
-  <div class="row" style="margin-top:10px;">
-    <button class="btn ghost grow" id="phaseDone">这一步做完了 → 下一步</button>
-  </div>
-</div>
 
-<div class="card">
-  <h2>自测题 + 记录分数</h2>
-  <div id="quizBox"></div>
-  <div class="score-row">
-    <input type="number" id="scoreRight" min="0" placeholder="对">
-    <span>/</span>
-    <input type="number" id="scoreTotal" min="1" placeholder="总题数">
-    <button class="btn green grow" id="scoreSave">保存并完成今天</button>
-  </div>
-  <div id="scoreJudge"></div>
-  <div class="hist" id="scoreHist" style="margin-top:10px;"></div>
-</div>
-
-<div class="card">
-  <h2>生词本（只收"看了认识、听时没反应"的词）</h2>
-  <input type="text" id="wordInput" placeholder="单词，如 isotope">
-  <textarea id="wordSentence" rows="2" placeholder="它在讲座里的原句（粘过来就行）" style="margin-top:8px;"></textarea>
-  <button class="btn grow" id="wordAdd" style="width:100%; margin-top:10px;">加入生词本</button>
-  <div id="wordList" style="margin-top:6px;"></div>
-</div>
-
-<div class="card">
-  <h2>生词复习（间隔重复 · 点卡片看原句）</h2>
-  <div class="mini" id="dueInfo" style="margin-bottom:8px;"></div>
-  <div class="flash" id="flashCard">
-    <div class="fw" id="flashWord">暂无生词</div>
-    <div class="fs" id="flashSent"></div>
-  </div>
-  <div class="row" style="margin-top:10px;">
-    <button class="btn red grow" id="flashNo">不认识</button>
-    <button class="btn green grow" id="flashYes">认识</button>
-  </div>
-  <div class="mini" style="margin-top:6px;">先想意思，再点卡片对原句，最后点认识/不认识。认识会升盒、隔更久再出现；不认识回 1 盒、今天还会再考你。</div>
-</div>
-
-<div class="card">
-  <h2>课程表</h2>
-  <div id="lessonList"></div>
-  <div style="border-top:1px solid var(--line); margin-top:10px; padding-top:12px;">
-    <div class="mini" style="margin-bottom:8px;">自己加一篇新讲座（比如 Muse 发你的新链接）：</div>
-    <input type="text" id="newTitle" placeholder="标题，如 河流与三角洲">
-    <input type="text" id="newTopic" placeholder="主题，如 地质学 · 讲座" style="margin-top:8px;">
-    <input type="text" id="newUrl" placeholder="链接 https://…" style="margin-top:8px;">
-    <button class="btn grow" id="lessonAdd" style="width:100%; margin-top:10px;">加进课程表（自动排 Day 序号）</button>
+  <div class="card">
+    <h2>自测题 + 记录分数</h2>
+    <div id="quizBox"></div>
+    <div class="score-row">
+      <input type="number" id="scoreRight" min="0" placeholder="对">
+      <span>/</span>
+      <input type="number" id="scoreTotal" min="1" placeholder="总题数">
+      <button class="btn green grow" id="scoreSave">保存并完成今天</button>
+    </div>
+    <div id="scoreJudge"></div>
+    <div class="hist" id="scoreHist" style="margin-top:10px;"></div>
   </div>
 </div>
 
-<div class="card">
-  <h2>数据备份</h2>
-  <div class="mini" style="margin-bottom:10px;">数据只存在这台设备的浏览器里。换手机或清缓存前，先导出一份存好；换新设备后导入就能接上。</div>
-  <div class="row">
-    <button class="btn ghost grow" id="exportBtn">导出备份（JSON）</button>
-    <label class="btn ghost grow" style="text-align:center;">导入备份<input type="file" id="importFile" accept=".json,application/json" style="display:none;"></label>
+<!-- ============ 复习 ============ -->
+<div class="view" id="view-review">
+  <div class="card">
+    <h2>每日生词复习 <span class="mini">间隔重复 · 到期才出现</span></h2>
+    <div class="mini" id="dueInfo" style="margin-bottom:10px;"></div>
+    <div class="flash" id="flashCard">
+      <div class="fw" id="flashWord">暂无生词</div>
+      <div class="fs" id="flashSent"></div>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <button class="btn red grow" id="flashNo">不认识</button>
+      <button class="btn green grow" id="flashYes">认识</button>
+    </div>
+    <div class="mini" style="margin-top:8px;">先想意思，再点卡片对原句，最后点认识/不认识。认识升盒（1 天→2 天→4 天后再出现）；不认识回 1 盒、今天还会再考你；3 盒再答对算掌握。</div>
   </div>
-  <div class="row" style="margin-top:8px;">
-    <button class="btn ghost grow" id="ankiBtn">导出生词给 Anki（txt）</button>
+
+  <div class="card">
+    <h2>生词本</h2>
+    <input type="text" id="wordInput" placeholder="手动加词，如 isotope">
+    <textarea id="wordSentence" rows="2" placeholder="它在演讲里的原句（粘过来就行）" style="margin-top:8px;"></textarea>
+    <button class="btn grow" id="wordAdd" style="width:100%; margin-top:10px;">加入生词本</button>
+    <div id="wordList" style="margin-top:6px;"></div>
   </div>
-  <div id="backupMsg"></div>
 </div>
 
-<div class="foot">
-  数据只存在这台设备的浏览器里，不上传任何服务器。<br>
-  记得偶尔用上面的「导出备份」存一份到微信/文件里。
+<!-- ============ 课程 ============ -->
+<div class="view" id="view-lessons">
+  <div class="card">
+    <h2>课程表</h2>
+    <div id="lessonList"></div>
+    <div style="border-top:1px solid var(--line); margin-top:10px; padding-top:14px;">
+      <div class="mini" style="margin-bottom:8px;">自己加一篇（粘 TED 链接即可；自加的篇目没有同步字幕，用内嵌视频看）：</div>
+      <input type="text" id="newTitle" placeholder="标题">
+      <input type="text" id="newTopic" placeholder="主题，如 科学 · 演讲" style="margin-top:8px;">
+      <input type="text" id="newUrl" placeholder="链接 https://www.ted.com/talks/…" style="margin-top:8px;">
+      <button class="btn grow" id="lessonAdd" style="width:100%; margin-top:10px;">加进课程表</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 数据 ============ -->
+<div class="view" id="view-data">
+  <div class="card">
+    <div class="stat">
+      <div class="box"><div class="num" id="streakNum">0</div><div class="lab">连续天数</div></div>
+      <div class="box"><div class="num" id="doneNum">0</div><div class="lab">已完成演讲</div></div>
+      <div class="box"><div class="num" id="wordNum">0</div><div class="lab">生词本</div></div>
+    </div>
+    <div class="cal" id="calGrid"></div>
+    <div class="mini" style="margin-top:6px;">最近 4 周打卡（绿 = 当天练过）</div>
+    <div id="chartWrap" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="card">
+    <h2>音频工具（自备音频）</h2>
+    <div class="mini" style="margin-bottom:8px;">手头有单独的音频文件或直链时用它练：变速、AB 循环逐句抠。</div>
+    <audio id="player" controls preload="metadata"></audio>
+    <div class="row">
+      <input type="text" id="audioUrl" placeholder="粘贴音频直链（mp3 地址）">
+      <button class="btn small" id="audioLoad">加载</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <label class="btn ghost small grow" style="text-align:center;">选本地音频文件<input type="file" id="audioFile" accept="audio/*" style="display:none;"></label>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn ghost small grow" id="back5">⏪ 5 秒</button>
+      <button class="btn ghost small grow" id="fwd5">5 秒 ⏩</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn ghost small grow rateBtn" data-rate="0.75">0.75×</button>
+      <button class="btn ghost small grow rateBtn on" data-rate="1">1×</button>
+      <button class="btn ghost small grow rateBtn" data-rate="1.25">1.25×</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn ghost small grow" id="setA">设 A 点</button>
+      <button class="btn ghost small grow" id="setB">设 B 点</button>
+      <button class="btn ghost small grow" id="clearAB">清除 AB</button>
+    </div>
+    <div class="mini" id="abInfo" style="margin-top:6px;">AB 未设置。</div>
+  </div>
+
+  <div class="card">
+    <h2>数据备份</h2>
+    <div class="mini" style="margin-bottom:12px;">数据只存在这台设备的浏览器里。换手机或清缓存前，先导出一份存好；换新设备后导入就能接上。</div>
+    <div class="row">
+      <button class="btn ghost grow" id="exportBtn">导出备份（JSON）</button>
+      <label class="btn ghost grow" style="text-align:center;">导入备份<input type="file" id="importFile" accept=".json,application/json" style="display:none;"></label>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn ghost grow" id="ankiBtn">导出生词给 Anki（txt）</button>
+    </div>
+    <div id="backupMsg"></div>
+  </div>
+
+  <div class="foot">
+    视频与字幕来自 TED 官方（ted.com），免费无登录。<br>
+    数据只存本机浏览器，不上传任何服务器。
+  </div>
+</div>
+
+<div class="tabbar">
+  <button data-view="practice" class="on"><span class="ic">▶</span>今日练习</button>
+  <button data-view="review"><span class="ic">Aa</span>生词复习</button>
+  <button data-view="lessons"><span class="ic">☰</span>课程表</button>
+  <button data-view="data"><span class="ic">◔</span>我的数据</button>
 </div>
 
 <script>
 "use strict";
 /* ============ 数据 ============ */
+var CUES = {"1":{"mp4":"https://py.tedcdn.com/consus/projects/00/08/40/003/products/2011u-matt-cutts-003-fallback-89b1e2dc048f55fc59effb548e54d755-1200k.mp4","cues":[[0.0,"A few years ago, I felt like I was stuck in a rut,","几年前，"],[5.0,"so I decided to follow in the footsteps","所以我决定追随"],[7.0,"of the great American philosopher, Morgan Spurlock,","伟大的美国哲学家摩根·斯普尔洛克的脚步，"],[10.56,"and try something new for 30 days.","尝试做新事情30天。"],[13.52,"The idea is actually pretty simple.","这个想法的确是非常简单。"],[15.68,"Think about something you've always wanted to add to your life","考虑下，你常想在你生命中做的一些事情"],[18.7,"and try it for the next 30 days.","接下来30天尝试做这些。"],[21.9,"It turns out 30 days is just about the right amount of time","这就是，"],[25.32,"to add a new habit or subtract a habit --","去养成一个新的习惯或者改掉一个习惯--"],[28.03,"like watching the news --","在你生活中。"],[29.3,"from your life.","在你生活中。"],[31.0,"There's a few things I learned while doing these 30-day challenges.","当我在30天做这些挑战性事情时，我学到以下一些事。"],[34.62,"The first was,","第一件事是，"],[36.0,"instead of the months flying by, forgotten,","取代了飞逝而过易被遗忘的岁月的是"],[39.0,"the time was much more memorable.","这段时间非常的更加令人难忘。"],[42.0,"This was part of a challenge I did to take a picture every day for a month.","挑战的一部分是要一个月内每天我要去拍摄一张照片。"],[45.6,"And I remember exactly where I was and what I was doing that day.","我清楚地记得那一天我所处的位置"],[51.13,"I also noticed","我也注意到"],[52.43,"that as I started to do more and harder 30-day challenges,","随着我开始做更多的，更难的30天里具有挑战性的事时，"],[55.79,"my self-confidence grew.","我自信心也增强了。"],[57.58,"I went from desk-dwelling computer nerd","我从一个台式计算机宅男极客"],[59.5,"to the kind of guy who bikes to work.","变成了一个爱骑自行车去工作的人--"],[62.6,"For fun!","为了玩乐。"],[63.87,"(Laughter)","甚至去年，我完成了在非洲最高山峰"],[65.24,"Even last year, I ended up hiking up Mt. Kilimanjaro,","甚至去年，我完成了在非洲最高山峰"],[68.29,"the highest mountain in Africa.","乞力马扎罗山的远足。"],[70.0,"I would never have been that adventurous before I started my 30-day challenges.","在我开始这30天做挑战性的事之前"],[76.0,"I also figured out that if you really want something badly enough,","我也认识到"],[80.62,"you can do anything for 30 days.","你可以在30天里做这些事。"],[84.11,"Have you ever wanted to write a novel?","每年11月，"],[86.96,"Every November,","数以万计的人们"],[88.27,"tens of thousands of people","在30天里，从零起点"],[89.6,"try to write their own 50,000-word novel, from scratch,","在30天里，从零起点"],[93.7,"in 30 days.","尝试写他们自己的5万字小说。"],[95.66,"It turns out, all you have to do is write 1,667 words a day","这结果就是，你所要去做的事"],[100.54,"for a month.","要写一个月。"],[102.57,"So I did.","所以我做到了。"],[104.0,"By the way, the secret is not to go to sleep","顺便说一下，秘密是除非在一天里你已经写完了1667个字，"],[106.89,"until you've written your words for the day.","要不你就甭想睡觉。"],[109.53,"You might be sleep-deprived,","你可能被剥夺睡眠，"],[111.0,"but you'll finish your novel.","但你将会完成你的小说。"],[113.77,"Now is my book the next great American novel?","那么我写的书会是下一部伟大的美国小说吗？"],[117.45,"No. I wrote it in a month.","不是的。我在一个月内写完它。"],[119.0,"It's awful.","它看上去太可怕了。"],[120.86,"(Laughter)","但在我的余生，"],[122.53,"But for the rest of my life,","但在我的余生，"],[124.73,"if I meet John Hodgman at a TED party,","如果我在一个TED聚会上遇见约翰·霍奇曼，"],[127.0,"I don't have to say,","我不必开口说，"],[129.0,"\"I'm a computer scientist.\"","“我是一个电脑科学家。”"],[131.0,"No, no, if I want to, I can say, \"I'm a novelist.\"","不，不会的，如果我想我可以说，“我是一个小说家。”"],[134.36,"(Laughter)","（笑声）"],[137.75,"So here's one last thing I'd like to mention.","我这儿想提的最后一件事。"],[140.0,"I learned that when I made small, sustainable changes,","当我做些小的，持续性的变化，"],[143.5,"things I could keep doing,","我可以不断尝试做的事时，"],[145.0,"they were more likely to stick.","我学到我可以把它们更容易地坚持做下来。"],[147.25,"There's nothing wrong with big, crazy challenges.","这和又大又疯狂的具有挑战性的事情无关。"],[150.0,"In fact, they're a ton of fun.","事实上，它们的乐趣无穷。"],[152.83,"But they're less likely to stick.","但是，它们就不太可能坚持做下来。"],[155.25,"When I gave up sugar for 30 days,","当我在30天里拒绝吃糖果，"],[157.84,"day 31 looked like this.","31天后看上去就像这样。"],[159.68,"(Laughter)","（笑声）"],[162.01,"So here's my question to you:","所以我给大家提的问题是："],[164.47,"What are you waiting for?","大家还在等什么呀？"],[166.23,"I guarantee you the next 30 days","我保准大家在未来的30天"],[168.53,"are going to pass whether you like it or not,","会去经历"],[172.16,"so why not think about something you have always wanted to try","那么为什么不考虑一些"],[176.88,"and give it a shot!","并在未来30天里试试"],[178.71,"For the next 30 days.","给自己一个机会。"],[180.66,"Thanks.","谢谢。"],[182.0,"(Applause)","（掌声）"]]},"2":{"mp4":"https://py.tedcdn.com/consus/projects/00/09/14/006/products/2007-david-gallo-006-fallback-91620ba942d69e0f4d2021f7e5276610-1200k.mp4","cues":[[0.0,"We're going to go on a dive to the deep sea,","好了，我们即将潜入海底深处。"],[3.0,"and anyone that's had that lovely opportunity","任何一个有过这种美妙机会的人都知道"],[7.0,"knows that for about two and half hours on the way down,","在这两个半小时的下降过程中，"],[9.71,"it's a perfectly positively pitch-black world.","是一个完全漆黑的世界。"],[12.42,"And we used to see the most mysterious animals out the window","我们透过窗户会看见世界上各种最神秘的动物，"],[15.44,"that you couldn't describe:","各种无法形容的动物。这些闪亮着的光，"],[16.83,"these blinking lights -- a world of bioluminescence, like fireflies.","完美地构成了如萤火虫般发光的世界。"],[20.45,"Dr. Edith Widder -- she's now at the Ocean Research and Conservation Association --","研究保护协会的Edith Witter博士"],[24.61,"was able to come up with a camera","这种照相机可以拍下这些令人难以置信的生物。"],[26.39,"that could capture some of these incredible animals,","这种照相机可以拍下这些令人难以置信的生物。"],[28.9,"and that's what you're seeing here on the screen.","这就是你现在在屏幕上看到的。"],[31.3,"That's all bioluminescence. Like I said: just like fireflies.","他们全部都是生物发光体。像我说的，就像萤火虫一样。"],[34.22,"There's a flying turkey under a tree.","这是个会飞的火鸡，在树下。（笑声）"],[36.5,"(Laughter)","我知道我现在像是个实习期的地质学家，不过我就是喜欢。"],[37.53,"I'm a geologist by training.","我知道我现在像是个实习期的地质学家，不过我就是喜欢。"],[40.7,"But I love that.","你可以看到这些生物发出的光，"],[43.0,"And you see, some of the bioluminescence they use to avoid being eaten,","你可以看到这些生物发出的光，"],[46.45,"some they use to attract prey,","有些又是为引诱食物上钩。"],[48.0,"but all of it, from an artistic point of view,","尽管如此，用艺术的角度来看，这些都如此神奇。"],[50.77,"is just positively amazing.","再来看看这里发生了些什么——"],[52.2,"And a lot of what goes on inside --","再来看看这里发生了些什么——"],[54.0,"There's a fish with glowing eyes, pulsating eyes.","这条鱼有着会发光，闪烁的眼睛。"],[56.36,"Some of the colors are designed to hypnotize,","有些颜色则可以催眠。"],[59.0,"these lovely patterns.","多么有趣的图案。这是最后一个："],[61.08,"And then this last one,","也是我的最爱，像转轮一样的设计。"],[63.0,"one of my favorites, this pinwheel design.","也是我的最爱，像转轮一样的设计。"],[66.0,"Just absolutely amazing, every single dive.","每一次潜水都充满着惊喜。"],[69.0,"That's the unknown world, and today we've only explored","这正是一个未知的世界。到今天为止，我们只探索了其中的极小部分，"],[72.09,"about 3 percent of what's out there in the ocean.","大约只占了所有海洋的3%。"],[74.84,"Already we've found the world's highest mountains,","到现在，我们已经发现了世界上最高的山峰，"],[77.47,"the world's deepest valleys,","最深的峡谷，"],[79.0,"underwater lakes, underwater waterfalls --","水下湖，水下瀑布，"],[81.1,"a lot of that we shared with you from the stage.","还有我们刚才看到的。"],[83.41,"And in a place where we thought no life at all,","然而，恰是我们曾经以为根本不可能有生命的地方，"],[86.1,"we find more life, we think, and diversity and density","我们发现了众多的生物，还有它们的密度和多样性，"],[88.7,"than the tropical rainforest,","都超过了热带雨林。这告诉我们"],[90.21,"which tells us that we don't know much about this planet at all.","我们实际上对自己的星球还不甚了解。"],[93.26,"There's still 97 percent,","还有剩下的97%，那里要不就是一片荒芜，要不就是充满惊喜。"],[94.61,"and either that 97 percent is empty or just full of surprises.","不过我现在还是想说说浅水里的世界，"],[97.73,"But I want to jump up to shallow water now","不过我现在还是想说说浅水里的世界，"],[99.81,"and look at some creatures that are positively amazing.","来看看那些神奇的生物。"],[102.52,"Cephalopods -- head-foots.","头足类动物，有头有角。小时候我把他们当作是枪乌贼。"],[105.3,"As a kid I knew them as calamari, mostly.","这是一条章鱼。"],[107.38,"(Laughter)","这是一条章鱼。"],[108.48,"This is an octopus.","这是来自Roger Hanlon博士，海洋生物实验室的成果。"],[109.7,"This is the work of Dr. Roger Hanlon at the Marine Biological Lab,","这是来自Roger Hanlon博士，海洋生物实验室的成果。"],[112.9,"and it's just fascinating how cephalopods can,","这些头足类动物真令人着迷，"],[115.1,"with their incredible eyes, sense their surroundings,","它用它们的眼睛，它们那难以置信的眼睛来观察周围的环境，"],[117.68,"look at light, look at patterns.","看光，看图案。"],[119.48,"Here's an octopus moving across the reef,","这有只章鱼正在穿过礁石。"],[122.0,"finds a spot to settle down, curls up and then disappears into the background.","找到一个位置，停下来，卷起，然后马上消失在背景之中。"],[126.27,"Tough thing to do.","这很难做到。"],[128.89,"In the next bit, we're going to see a couple squid.","接下来，再来一起看一对鱿鱼。"],[131.3,"Now males, when they fight,","这就是鱿鱼。当雄性鱿鱼搏斗时，"],[133.0,"if they're really aggressive, they turn white.","如果它们想要显示出自己的侵略性，它们就变为白色了。"],[135.2,"And these two males are fighting.","它们用撞屁股的方式来搏斗，"],[136.8,"They do it by bouncing their butts together,","它们用撞屁股的方式来搏斗，"],[138.9,"which is an interesting concept.","真是挺有意思的方法。这里有一条雄性在左边，"],[140.54,"Now, here's a male on the left and a female on the right,","雌性在右边。"],[143.3,"and the male has managed to split his coloration","看，这条雄性能有办法利用颜色把自己分为两半，"],[146.0,"so the female only always sees the kinder, gentler squid in him.","所以雌性只能看到它温顺，优雅的一边，"],[149.08,"(Laughter)","雄性-- （笑声）再来看一次。"],[153.0,"Let's take a look at it again. Watch the coloration:","让我们再看一次。注意它的颜色："],[156.0,"white on the right, brown on the left.","白色在右边，棕色在左边。"],[159.0,"He takes a step back,","它后退一步，让其它的雄性无法靠近"],[161.74,"he's keeping off the other males by splitting his body,","来到另外一边，并且马上转换颜色。"],[164.47,"and comes up on the other side --","来到另外一边，并且马上转换颜色。"],[166.2,"Bingo!","瞧！以前有人告诉我"],[167.29,"Now, I'm told that's not not just a squid phenomenon with males,","这个雄性特征不仅仅是在鱿鱼身上，不过我也不太确定。"],[170.37,"but I don't know.","（掌声）"],[171.64,"(Laughter)","墨鱼，我很喜欢墨鱼。这是一只巨型澳大利亚墨鱼。"],[173.0,"Cuttlefish. I love cuttlefish.","墨鱼，我很喜欢墨鱼。这是一只巨型澳大利亚墨鱼。"],[174.92,"This is a Giant Australian Cuttlefish.","看它，看它那双无精打采的眼睛。"],[176.81,"And there he is, his droopy little eyes up here.","看它，看它那双无精打采的眼睛。"],[180.91,"But they can do pretty amazing things, too.","我们马上就能看到它退入到礁石的夹缝中去，"],[183.26,"Here we're going to see one backing into a crevice,","我们马上就能看到它退入到礁石的夹缝中去，"],[186.0,"and watch his tentacles --","注意它的触角。"],[188.0,"he just pulls them in, makes them look just like algae.","它就这样把触角拉进来，使自己看起来像海藻一样。"],[191.0,"Disappears right into the background.","刹那就消失在背景中。"],[194.34,"Positively amazing.","多神奇！这又是两只雄性在搏斗。"],[195.69,"Here's two males fighting.","当然，这些头足类非常聪明，"],[197.12,"Once again, they're smart enough, these cephalopods;","当然，这些头足类非常聪明，"],[199.6,"they know not to hurt each other.","他们知道如何不会伤害到对方。"],[201.2,"But look at the patterns that they can do with their skin.","不过看下它们能够利用皮肤来变换图案。怎么样？"],[204.1,"That's an amazing thing.","很神奇吧！"],[207.52,"Here's an octopus.","因为那些食肉动物会发现它们。"],[208.82,"Sometimes they don't want to be seen when they move,","因为那些食肉动物会发现它们。"],[211.28,"because predators can see them.","看，这个家伙把自己弄的像石头一样，"],[212.81,"This guy can make himself look like a rock,","观察着它周围的环境，"],[214.91,"and, looking at his environment,","然后滑过水底，"],[217.11,"can actually slide across the bottom,","利用波纹和阴影来隐藏自己，从而不被发现。"],[219.13,"using the waves and the shadows so he can't be seen.","利用波纹和阴影来隐藏自己，从而不被发现。"],[222.13,"His motion blends right into the background --","就是这样，无声无息地融入环境之中。"],[226.0,"the moving rock trick.","这就是移动石头的手法。我们从浅海中学到了很多新东西。"],[228.8,"So, we're learning lots new from the shallow water.","继续来探索下深海领域，"],[231.3,"Still exploring the deep, but learning lots from the shallow water.","继续来探索下深海领域，"],[234.5,"There's a good reason why:","这有个原因来解释：在浅海里，"],[235.79,"the shallow water's full of predators -- here's a barracuda --","到处都是捕猎者。这是条梭鱼。"],[238.72,"and if you're an octopus or a cephalopod,","如果你是条章鱼或是头足类动物的话，"],[240.8,"you need to really understand how to use your surroundings to hide.","你确实需要知道怎么利用周围的环境来隐藏自己。"],[244.0,"In the next scene, you're going to see a nice coral bottom.","下个画面里，你可以看到一个美丽的珊瑚。"],[246.8,"And you see that an octopus would stand out","如果不进行伪装，极易被发现。"],[248.87,"very easily there if you couldn't use your camouflage,","伪装是改变你皮肤的颜色和纹理。"],[251.47,"use your skin to change color and texture.","前面这里有些海藻，"],[253.6,"Here's some algae in the foreground --","前面这里有些海藻，"],[256.0,"and an octopus.","还有一条章鱼。难道不神奇么？不过现在，显然Roger（摄影师）吓到了它，"],[258.77,"Ain't that amazing?",""],[261.85,"Now, Roger spooked him, so he took off in a cloud of ink,","它马上释放烟雾弹——墨水来掩护逃脱。"],[266.0,"and when he lands, the octopus says, \"Oh, I've been seen.","当它停下来，会想，“啊，我被发现了，"],[269.0,"The best thing to do is to get as big as I can get.\"","那我最好变到最大来保护下自己。"],[271.5,"That big brown makes his eyespot very big.","那片棕色让它的眼睛看起来十分大。"],[274.0,"So, he's bluffing. Let's do it backwards.","它在唬人。让我们看一次倒放。"],[276.0,"I thought he was joking when he first showed it to me.","我第一次看到的时候还以为他在开玩笑呢。"],[278.6,"I thought it was all graphics. So here it is in reverse.","我以为是电脑特效。让我们看看倒放。"],[281.29,"Watch the skin color; watch the skin texture.","注意看它皮肤的颜色，以及皮肤的纹理。"],[283.5,"Just an amazing animal, it can change color and texture","多么神奇的动物，可以改变自己的颜色和质地"],[286.2,"to match the surroundings.","来变得和背景一样。看它消失在海藻中。"],[287.56,"Watch him blend right into this algae.","来变得和背景一样。看它消失在海藻中。"],[290.0,"One, two, three.","一，二，三。"],[292.0,"(Applause)","一，二，三。"],[296.76,"And now he's gone, and so am I. Thank you very much.","它不见了，我也该下去了。谢谢大家！"],[300.76,"(Applause)",""]]},"3":{"mp4":"https://py.tedcdn.com/consus/projects/00/08/70/007/products/2013s-angela-lee-duckworth-007-fallback-1b8090863dea4e010a5845b20da9409e-1200k.mp4","cues":[[0.86,"When I was 27 years old,","在我27岁的时候，"],[2.96,"I left a very demanding job in management consulting","我辞去了一份非常有挑战性的职业—企业管理咨询，"],[6.3,"for a job that was even more demanding: teaching.","转而投入了一份更加具有挑战性的职业：教育。"],[11.3,"I went to teach seventh graders math","我来到纽约的一些公立学校"],[13.8,"in the New York City public schools.","教7年级的学生的数学。"],[16.2,"And like any teacher, I made quizzes and tests.","和别的老师一样，我会给学生们做小测验和考试，"],[19.1,"I gave out homework assignments.","我会给他们布置家庭作业。"],[21.1,"When the work came back, I calculated grades.","当这些试卷和作业收上来之后，我计算了他们的成绩。"],[24.76,"What struck me was that IQ was not the only difference","让我震惊的是，IQ的高低并不是"],[29.33,"between my best and my worst students.","我最好的和最差的学生之间唯一的差别。"],[33.03,"Some of my strongest performers did not have stratospheric IQ scores.","一些在课业上表现很好的学生"],[38.33,"Some of my smartest kids weren't doing so well.","一些非常聪明的孩子反而在课业上表现的不那么尽如人意。"],[42.3,"And that got me thinking.","这引起了我的思考。"],[44.43,"The kinds of things you need to learn in seventh grade math,","当然，学生们在7年级需要学习的东西"],[47.4,"sure, they're hard: ratios, decimals, the area of a parallelogram.","是有难度的，像比率，小数，"],[52.66,"But these concepts are not impossible,","但是这些概念是完全可以被掌握的，"],[55.36,"and I was firmly convinced that every one of my students","我坚信我的每一位学生"],[59.5,"could learn the material","都可以学会教材内容，"],[62.1,"if they worked hard and long enough.","只要他们肯花时间和精力的话。"],[64.83,"After several more years of teaching,","经过几年教学之后，"],[67.33,"I came to the conclusion that what we need in education","我得出一个结论，我们在教育方面所需要的是"],[71.1,"is a much better understanding of students and learning","从学习动力的角度和心理学的角度，"],[74.56,"from a motivational perspective,","对学生和学习行为"],[76.9,"from a psychological perspective.","进行一次更为深刻的理解。"],[79.8,"In education, the one thing we know how to measure best is IQ.","在教育体系中， 我们都知道评价优秀学生的标准"],[86.16,"But what if doing well in school and in life","就是IQ， 但如果在学校和生活中的优秀表现"],[90.03,"depends on much more","远不仅仅依赖于"],[92.16,"than your ability to learn quickly and easily?","你轻松高效学习的能力呢？"],[96.36,"So I left the classroom,","所有我离开了讲台，"],[98.33,"and I went to graduate school to become a psychologist.","回到学校继续攻读心理学硕士学位。"],[101.86,"I started studying kids and adults","我开始研究孩子和大人，"],[104.06,"in all kinds of super challenging settings,","在各种非常具有挑战性的情况下，"],[106.9,"and in every study my question was,","以及在各项研究中，我的问题是"],[109.36,"who is successful here and why?","谁才是成功者，为什么他们会成功？"],[112.4,"My research team and I went to West Point Military Academy.","我和我的研究团队前往西点军校展开调研，"],[116.46,"We tried to predict which cadets","我们试图预测哪些学员"],[118.16,"would stay in military training and which would drop out.","能够耐得住军队的训练，哪些会被淘汰出局。"],[122.4,"We went to the National Spelling Bee","我们前去观摩全国拼字比赛，"],[124.66,"and tried to predict which children would advance farthest in competition.","同时也试着预测哪些孩子会晋级到"],[129.86,"We studied rookie teachers working in really tough neighborhoods,","我们研究在恶劣的工作环境下工作的，"],[133.93,"asking which teachers are still going to be here in teaching","哪些老师决定会在学年结束后"],[137.4,"by the end of the school year,","继续留下来任教，"],[139.4,"and of those, who will be the most effective","以及他们之中谁能最快地"],[142.43,"at improving learning outcomes for their students?","提高学生的学习成绩。"],[145.6,"We partnered with private companies, asking,","我们与私企合作，向他们询问"],[147.83,"which of these salespeople is going to keep their jobs?","哪些销售人员可以保住工作，"],[150.56,"And who's going to earn the most money?","哪些可以赚钱最多？"],[152.8,"In all those very different contexts,","在所有那些不同的情境下，"],[155.46,"one characteristic emerged as a significant predictor of success.","一种性格特征凸显了出来，"],[160.46,"And it wasn't social intelligence.","而且它并不是社交智力。"],[162.66,"It wasn't good looks, physical health,","不是漂亮的外表，强健的体魄，也不是很高的IQ，"],[165.66,"and it wasn't IQ.","它是毅力。"],[167.76,"It was grit.","它是毅力。"],[169.9,"Grit is passion and perseverance for very long-term goals.","毅力是对长远目标的激情和坚持，"],[175.0,"Grit is having stamina.","毅力是拥有持久的恒劲，"],[177.23,"Grit is sticking with your future, day in, day out,","毅力是你对未来的坚持，日复一日"],[181.46,"not just for the week, not just for the month,","不是仅仅持续一个星期或者一个月，"],[184.86,"but for years,","而是几年甚至几十年努力奋斗着"],[186.4,"and working really hard to make that future a reality.","让自己的梦想变为现实。"],[190.96,"Grit is living life like it's a marathon, not a sprint.","毅力是把生活当成一场马拉松而不是一次短跑。"],[196.16,"A few years ago,","几年前，在芝加哥的公立学校里，"],[197.6,"I started studying grit in the Chicago public schools.","我开始研究毅力。"],[201.13,"I asked thousands of high school juniors","我对上千名初中生进行了"],[203.46,"to take grit questionnaires,","关于毅力的问卷调查，"],[205.3,"and then waited around more than a year","然后等候了一年多，"],[207.26,"to see who would graduate.","来看最终哪些学生能毕业。"],[209.53,"Turns out that grittier kids","结果证明那些更具毅力的学生"],[211.76,"were significantly more likely to graduate,","在毕业的概率上占绝对优势，"],[214.96,"even when I matched them on every characteristic I could measure,","即使是在同样可以量化的外在因素下"],[218.76,"things like family income,","像家庭收入，"],[221.03,"standardized achievement test scores,","标准化成绩测验的分数，"],[223.76,"even how safe kids felt when they were at school.","甚至是孩子们在学校能获得多少安全感之类，仍是有毅力的学生更容易毕业"],[227.36,"So it's not just at West Point or the National Spelling Bee","所有不仅仅是在西点军校里或者全国拼字比赛上"],[230.33,"that grit matters.","才需要毅力。在学校亦是如此，"],[231.46,"It's also in school,","才需要毅力。在学校亦是如此，"],[233.43,"especially for kids at risk for dropping out.","尤其是对于那些徘徊在辍学边缘的孩子们。"],[237.1,"To me, the most shocking thing about grit","对于我自己来说，关于毅力最让我震惊的事情莫过于"],[240.1,"is how little we know,","对于毅力，我们知之甚少，"],[242.06,"how little science knows, about building it.","在培养毅力上，科学对理解的认识又是何等贫乏。"],[245.0,"Every day, parents and teachers ask me,","每天都有家长和老师来问我，"],[247.26,"\"How do I build grit in kids?","“我怎样做才能培养孩子的毅力呢?"],[249.5,"What do I do to teach kids a solid work ethic?","该做些什么才能教授给孩子们真正的职业道德？"],[252.76,"How do I keep them motivated for the long run?\"","又该怎样调动他们长期的积极性呢？”"],[255.86,"The honest answer is,","老实说，我不知道。（笑声）"],[257.86,"I don't know.","老实说，我不知道。（笑声）"],[258.96,"(Laughter)","我所知道的是，才华并不能使你坚韧不拔。"],[260.46,"What I do know is that talent doesn't make you gritty.","我所知道的是，才华并不能使你坚韧不拔。"],[263.53,"Our data show very clearly","我们的数据十分清楚地表明，"],[265.86,"that there are many talented individuals","有许多才华横溢的人，"],[268.3,"who simply do not follow through on their commitments.","他们都无法坚持兑现自己的承诺。"],[271.8,"In fact, in our data, grit is usually unrelated","事实上，根据我们的数据来看，毅力通常与其他因素无关，"],[276.06,"or even inversely related to measures of talent.","甚至与才华的衡量标准背道而驰。"],[280.46,"So far, the best idea I've heard about building grit in kids","到目前为止，我所听说过的在孩子身上培养坚韧品质最有效的方法"],[284.6,"is something called \"growth mindset.\"","叫“成长型思维模式。”"],[287.43,"This is an idea developed at Stanford University by Carol Dweck,","斯坦福大学卡洛杜威克提出过一个观点，"],[291.13,"and it is the belief that the ability to learn is not fixed,","他相信"],[296.26,"that it can change with your effort.","它随着你的努力程度而变化。"],[299.43,"Dr. Dweck has shown","杜威克教授表示，当孩子们阅读和学习有关大脑的知识"],[300.76,"that when kids read and learn about the brain","以及它在面对挑战时"],[303.93,"and how it changes and grows in response to challenge,","以及它在面对挑战时"],[307.43,"they're much more likely to persevere when they fail,","他们失败之后更容易坚持下去，"],[311.46,"because they don't believe that failure is a permanent condition.","因为他们"],[317.06,"So growth mindset is a great idea for building grit.","因此，成长性思维模式对培养毅力大有裨益。"],[320.73,"But we need more.","但是我们需要更多。"],[322.83,"And that's where I'm going to end my remarks,","我决定在此结束我的评论，"],[324.93,"because that's where we are.","因为我们正在经历着这一切。"],[326.3,"That's the work that stands before us.","这是眼前所面临的工作。"],[328.5,"We need to take our best ideas, our strongest intuitions,","我们要拿出最好的想法和最强的直觉，"],[332.4,"and we need to test them.","我们要对他们进行实践。"],[334.5,"We need to measure whether we've been successful,","我们需要估量这一切是否成功"],[337.23,"and we have to be willing to fail, to be wrong,","同时还要渴望对失败和错误，"],[340.96,"to start over again with lessons learned.","要从这些失败中汲取经验重新再来。"],[344.33,"In other words, we need to be gritty","换句话说，我们只有自己变得更有毅力"],[347.3,"about getting our kids grittier.","才能让我们的孩子变得更有毅力。"],[350.16,"Thank you.","谢谢大家！"],[351.23,"(Applause)","（掌声）"]]},"4":{"mp4":"https://py.tedcdn.com/consus/projects/00/28/83/005/products/2017-marc-raibert-005-fallback-bc3774f24ff229b8050ec141017792be-1200k.mp4","cues":[[7.26,"(Laughter)","（笑声）"],[12.5,"(Laughter)","（笑声）"],[24.89,"That's SpotMini.","这是SpotMini，"],[26.06,"He'll be back in a little while.","它过一会儿还会回来。"],[27.71,"I --","我——"],[28.89,"(Applause)","（掌声）"],[33.65,"I love building robots.","我喜欢建造机器人。"],[36.6,"And my long-term goal is to build robots","我远期的目标是发明"],[39.08,"that can do what people and animals do.","可以像人类和动物一样行动的机器人。"],[42.14,"And there's three things in particular","我们尤其感兴趣的"],[45.72,"that we're interested in.","有3个方面，"],[48.19,"One is balance and dynamic mobility,","其一是平衡和动态运动，"],[51.51,"the second one is mobile manipulation,","其二是移动操控，"],[54.17,"and the third one is mobile perception.","其三是移动感知。"],[57.12,"So, dynamic mobility and balance --","首先，关于动态运动和平衡——"],[60.06,"I'm going to do a demo for you.","我来做个演示。"],[63.28,"I'm standing here, balancing.","我站在这里。保持着平衡。"],[66.3,"I can see you're not very impressed. OK, how about now?","我知道你们并没有 觉得很惊讶，那现在呢？"],[69.04,"(Laughter)","（笑声）"],[70.22,"How about now?","这次呢？"],[71.44,"(Applause)","（鼓掌）"],[74.23,"Those simple capabilities mean that people can go almost anywhere on earth,","这些简单的能力使得 我们可以走到世界各个角落，"],[78.63,"on any kind of terrain.","无论哪种地形。"],[80.3,"We want to capture that for robots.","我们也希望机器人可以这样。"],[83.95,"What about manipulation?","那么，操控能力呢？"],[85.79,"I'm holding this clicker in my hand;","我手里拿着点击器，"],[87.53,"I'm not even looking at it,","我都不用看，"],[88.85,"and I can manipulate it without any problem.","就可以轻而易举地操控它。"],[91.6,"But even more important,","但更重要的是，"],[94.27,"I can move my body while I hold the manipulator, the clicker,","我可以在拿着操控器的 时候随意变换姿势，"],[100.3,"and stabilize and coordinate my body,","我的身体还是很稳定，保持协调，"],[102.49,"and I can even walk around.","我还能随意走动。"],[104.55,"And that means I can move around in the world","也就是说我可以来回走，"],[107.47,"and expand the range of my arms and my hands","即使伸开我的手臂和手，"],[110.8,"and really be able to handle almost anything.","我也可以拿着几乎任何的东西。"],[112.99,"So that's mobile manipulation.","这就是所谓的移动操控。"],[115.63,"And all of you can do this.","你们都能做到。"],[117.43,"Third is perception.","第三是感知。"],[119.37,"I'm looking at a room with over 1,000 people in it,","我看着有1000多个人的房间，"],[122.66,"and my amazing visual system can see every one of you --","我的视觉系统 让我可以看见你们每一个人，"],[127.46,"you're all stable in space,","你们都静静的坐着，"],[129.45,"even when I move my head,","即使我有时转个头，"],[130.79,"even when I move around.","或者来回走。"],[132.36,"That kind of mobile perception is really important for robots","这种移动感知对于 要移动和做动作的"],[136.16,"that are going to move and act","机器人来说，"],[137.83,"out in the world.","很重要。"],[140.04,"I'm going to give you a little status report","我在这里要分享一个状态报告，"],[142.35,"on where we are in developing robots toward these ends.","关于我们研究机器人的进展现状。"],[148.52,"The first three robots are all dynamically stabilized robots.","前三种都是有动态稳固性的机器人，"],[153.08,"This one goes back a little over 10 years ago --","这个是10年前设计的，"],[155.75,"\"BigDog.\"","BigDog。"],[156.95,"It's got a gyroscope that helps stabilize it.","它有一个陀螺仪来保持稳定，"],[160.28,"It's got sensors and a control computer.","装有传感器和控制电脑。"],[163.64,"Here's a Cheetah robot that's running with a galloping gait,","这个是猎豹机器人， 以飞快的步伐跑动，"],[166.83,"where it recycles its energy,","它可以重复循环利用能源，"],[168.55,"it bounces on the ground,","在地上跳跃，"],[170.14,"and it's computing all the time","为了能保持稳定的驱进，"],[171.72,"in order to keep itself stabilized and propelled.","全程都是电脑操控。"],[176.11,"And here's a bigger robot","这个更大的机器人，"],[177.97,"that's got such good locomotion using its legs,","能够熟练使用自己的腿，"],[180.69,"that it can go in deep snow.","在雪中行走，"],[182.12,"This is about 10 inches deep,","这个雪大约 25 厘米厚，"],[184.56,"and it doesn't really have any trouble.","行走完全没有问题。"],[188.35,"This is Spot, a new generation of robot --","这个新一代机器人Spot，"],[191.0,"just slightly older than the one that came out onstage.","就比刚才台上的那个 设计得早了一点点，"],[194.44,"And we've been asking the question --","我们一直在问一个问题——"],[196.29,"you've all heard about drone delivery:","你们都知道无人机递送："],[198.29,"Can we deliver packages to your houses with drones?","我们能用无人机送货上门吗？"],[200.94,"Well, what about plain old legged-robot delivery?","那用有腿的普通老式 机器人送货怎么样？"],[203.75,"(Laughter)","（笑声）"],[204.91,"So we've been taking our robot to our employees' homes","我们把机器人带到员工的家，"],[208.33,"to see whether we could get in --","看看是否能进去——"],[209.93,"(Laughter)","（笑声）"],[210.98,"the various access ways.","进门的路径五花八门。"],[212.23,"And believe me, in the Boston area,","相信我，波士顿这一带，"],[214.14,"there's every manner of stairway twists and turns.","有着各式各样弯曲的楼梯和转弯。"],[217.34,"So it's a real challenge.","这真的是一个挑战。"],[218.6,"But we're doing very well, about 70 percent of the way.","不过大约70%的路， 我们都走得很顺利。"],[222.66,"And here's mobile manipulation,","这是移动操控，"],[224.25,"where we've put an arm on the robot,","我们给机器人放了一个手臂，"],[226.86,"and it's finding its way through the door.","它在找方法进门。"],[229.92,"Now, one of the important things about making autonomous robots","不要让它们 完全按照你的指示行动，"],[233.1,"is to make them not do just exactly what you say,","是发明自主机器人很重要的一点。"],[236.35,"but make them deal with the uncertainty of what happens in the real world.","要让它们学会处理 真实世界里发生的不确定事件，"],[242.23,"So we have Steve there, one of the engineers,","这是我们其中一名工程师，史蒂夫，"],[245.27,"giving the robot a hard time.","他正在给机器人制造麻烦。"],[246.9,"(Laughter)","（笑声）"],[247.96,"And the fact that the programming still tolerates all that disturbance --","事实上，所编写的程序 仍然能让它抵抗干扰，"],[252.17,"it does what it's supposed to.","做它该做的事。"],[253.69,"Here's another example, where Eric is tugging on the robot","这是另一个例子， 艾瑞克在机器人上楼梯的时候"],[256.51,"as it goes up the stairs.","在后面拖拽它。"],[257.83,"And believe me,","相信我，"],[259.0,"getting it to do what it's supposed to do in those circumstances","在这种情况下， 让它们保持原计划的行动"],[262.3,"is a real challenge,","绝非易事，"],[263.67,"but the result is something that's going to generalize","不过成果可以进行推广，"],[266.43,"and make robots much more autonomous than they would be otherwise.","让机器人比之前更加自主。"],[271.5,"This is Atlas, a humanoid robot.","这个像人的机器人是Atlas，"],[274.61,"It's a third-generation humanoid that we've been building.","这是我们发明的第三代的机器人。"],[278.85,"I'll tell you a little bit about the hardware design later.","待会儿我会介绍一些 硬件设计方面的事情。"],[281.69,"And we've been saying:","我们一直在说："],[282.89,"How close to human levels of performance and speed could we get","在一项普通的任务中， 比如在传送带上"],[287.34,"in an ordinary task,","移动箱子，"],[288.94,"like moving boxes around on a conveyor?","它的性能和速度 跟人类相比还有多少差距？"],[292.11,"We're getting up to about two-thirds of the speed that a human operates","平均来讲，我们大约可以 达到人力操纵速度的"],[297.44,"on average.","三分之二。"],[298.94,"And this robot is using both hands, it's using its body,","这个机器人正在使用 它的两只手和身体，"],[301.89,"it's stepping,","同时也在行走，"],[303.08,"so it's really an example of dynamic stability,","这是动态稳定，"],[305.83,"mobile manipulation","移动操控，"],[307.24,"and mobile perception.","移动感觉的很好的例子。"],[310.37,"Here --","这里——"],[312.08,"(Laughter)","（笑声）"],[314.57,"We actually have two Atlases.","我们实际上有两个Atlas。"],[316.66,"(Laughter)","（笑声）"],[318.38,"Now, everything doesn't go exactly the way it's supposed to.","事情不一定会按照 预想的情况发生。"],[321.8,"(Laughter)","（笑声）"],[326.5,"(Laughter)","（笑声）"],[328.72,"(Laughter)","（笑声）"],[333.47,"And here's our latest robot, called \"Handle.\"","这是我们最新的机器人，Handle，"],[336.64,"Handle is interesting, because it's sort of half like an animal,","它很有意思，有着 像腿又像轮子的东西，"],[340.78,"and it's half something else","因为它一半像动物，"],[343.12,"with these leg-like things and wheels.","一半像其他的东西。"],[346.32,"It's got its arms on in kind of a funny way,","它的手臂很有趣，"],[349.37,"but it really does some remarkable things.","但是确实能做出些 让人惊叹的事情。"],[351.49,"It can carry 100 pounds.","它能够承受100磅的重量。"],[354.85,"It's probably going to lift more than that,","很有可能打算举起更重的东西，"],[356.93,"but so far we've done 100.","不过目前我们只尝试到100。"],[358.73,"It's got some pretty good rough-terrain capability,","它可以很好的适应地形，"],[361.19,"even though it has wheels.","即使装有轮子。"],[366.06,"And Handle loves to put on a show.","Handle还很喜欢表演。"],[368.87,"(Laughter)","（笑声）"],[372.82,"(Applause)","（鼓掌）"],[378.92,"I'm going to give you a little bit of robot religion.","我想向你们介绍一点 机器人学的相关知识。"],[382.54,"A lot of people think that a robot is a machine where there's a computer","很多人认为机器人就是一个"],[386.89,"that's telling it what to do,","听从电脑指示的机器，"],[389.08,"and the computer is listening through its sensors.","同时电脑从传感器接受信息。"],[392.53,"But that's really only half of the story.","但这只是其中一半。"],[394.96,"The real story is that the computer is on one side,","事实是，电脑在一端"],[398.09,"making suggestions to the robot,","给机器人指示，"],[400.06,"and on the other side are the physics of the world.","而另一端是物理世界。"],[402.96,"And that physics involves gravity, friction, bouncing into things.","包括重力，摩擦力，弹力。"],[408.42,"In order to have a successful robot,","为了研究成功的机器人，"],[410.28,"my religion is that you have to do a holistic design,","我的观念是，必须要做好全盘设计，"],[414.89,"where you're designing the software, the hardware and the behavior","同时要包括软件，硬件"],[418.47,"all at one time,","和行为，"],[419.73,"and all these parts really intermesh and cooperate with each other.","这些部分必须相互结合并且协调，"],[423.45,"And when you get the perfect design, you get a real harmony","只有你的设计达到完美， 在各个部分相互契合的时候，"],[426.59,"between all those parts interacting with each other.","才会实现真正的协调。"],[430.45,"So it's half software and half hardware,","所以是50%软件和50%硬件，"],[432.73,"plus the behavior.","再加上行为。"],[434.88,"We've done some work lately on the hardware, where we tried to go --","最近我们在研究硬件部分， 希望能够做到——"],[438.44,"the picture on the left is a conventional design,","图片左边是传统设计，"],[440.94,"where you have parts that are all bolted together,","可以看到导体、管子、连接原件等等"],[443.87,"conductors, tubes, connectors.","都被衔接在一起。"],[446.63,"And on the right is a more integrated thing;","而右边的设计则更加集成化，"],[448.71,"it's supposed to look like an anatomy drawing.","看起来就像解剖图像。"],[451.51,"Using the miracle of 3-D printing,","借助神奇的3D打印，"],[454.04,"we're starting to build parts of robots","我们可以把机器人的部件打造得"],[456.7,"that look a lot more like the anatomy of an animal.","看起来就像动物被解剖的部位。"],[459.63,"So that's an upper-leg part that has hydraulic pathways --","大腿部分有液压通路，"],[462.99,"actuators, filters --","包括促进器和过滤器——"],[464.95,"all embedded, all printed as one piece,","都是嵌入式的， 作为单一部件被打印出来，"],[467.35,"and the whole structure is developed","这样整体结构就做成了。"],[470.58,"with a knowledge of what the loads and behavior are going to be,","根据机器人采集的数据，"],[473.64,"which is available from data recorded from robots","和一些模拟计算，我们可以推测出"],[476.56,"and simulations and things like that.","它能够完成的工作量和行为。"],[478.4,"So it's a data-driven hardware design.","所以这是数据驱动的硬件设计。"],[481.73,"And using processes like that,","变化过程如下，"],[483.48,"not only the upper leg but some other things,","不只是大腿，还包括其他部位，"],[485.75,"we've gotten our robots to go from big, behemoth, bulky, slow, bad robots --","我们的机器人从最初 庞大笨拙的造型——"],[490.91,"that one on the right, weighing almost 400 pounds --","右边那个大约400傍重——"],[494.55,"down to the one in the middle which was just in the video,","进化到中间这个， 刚刚视频中的版本，"],[497.69,"weighs about 190 pounds,","大约重190傍，"],[499.27,"just a little bit more than me,","比我重一点点，"],[500.99,"and we have a new one,","我们还有个新的机器人，"],[502.5,"which is working but I'm not going to show it to you yet,","它可以运行，但是我 今天不会给大家演示，"],[505.27,"on the left,","就是左边这个，"],[506.45,"which weighs just 165 pounds,","重约165傍，"],[508.12,"with all the same strength and capabilities.","却有着同样的力量和能力。"],[510.41,"So these things are really getting better very quickly.","所以这些东西更新很快。"],[514.46,"So it's time for Spot to come back out,","现在该让Spot出场了，"],[517.75,"and we're going to demonstrate a little bit of mobility,","我们现在来演示一些运动能力，"],[521.52,"dexterity and perception.","敏捷性和感知能力。"],[523.86,"This is Seth Davis, who's my robot wrangler today,","这是赛斯·戴维斯， 是机器人的操纵者，"],[527.65,"and he's giving Spot some general direction","他会通过遥控器，"],[530.71,"by steering it around,","给Spot一些大概的指导，"],[532.56,"but all the coordination of the legs and the sensors","但是它的腿和传感器的配合，"],[535.66,"is done by the robot's computers on board.","是由自身配备的电脑控制。"],[538.72,"The robot can walk with a number of different gaits;","它有很多形式的步伐，"],[542.19,"it's got a gyro,","它有一个陀螺仪，"],[544.38,"or a solid-state gyro,","固态的陀螺仪，"],[545.74,"an IMU on board.","搭载有IMU。"],[547.62,"Obviously, it's got a battery, and things like that.","很明显，它还有电池等等。"],[551.53,"One of the cool things about a legged robot is,","有腿的机器人很酷的一点就是，"],[554.06,"it's omnidirectional.","它能向全方位行走。"],[555.53,"In addition to going forward, it can go sideways,","不仅可以直走，还可以横着走，"],[559.59,"it can turn in place.","也可以原地转弯。"],[564.66,"And this robot is a little bit of a show-off.","这个机器人挺喜欢炫耀。"],[567.86,"It loves to use its dynamic gaits,","它喜欢用动态步伐，"],[569.84,"like running --","比如跑步。"],[571.02,"(Laughter)","（笑声）"],[572.09,"And it's got one more.","还有一个。"],[575.28,"(Laughter)","（笑声）"],[578.04,"Now if it were really a show-off, it would be hopping on one foot,","如果它确实很喜欢炫耀， 就会展示单脚跳了，"],[581.3,"but, you know.","Spot装有一系列摄像头， 立体摄像头，"],[582.49,"Now, Spot has a set of cameras here, stereo cameras,","Spot装有一系列摄像头， 立体摄像头，"],[586.56,"and we have a feed up in the center.","这里中间有一个。"],[588.77,"It's kind of dark out in the audience,","对着观众有点暗，"],[590.62,"but it's going to use those cameras in order to look at the terrain","但是在它跨过它前方障碍的时候，"],[593.86,"right in front of it,","它会利用镜头看清"],[595.06,"while it goes over these obstacles back here.","前方的地形。"],[597.85,"For this demo, Seth is steering,","下面这个演示，由赛斯控制，"],[601.18,"but the robot's doing all its own terrain planning.","但是机器人会自己做地形探测，"],[603.71,"This is a terrain map,","这是利用镜头得到实时的数据，"],[605.24,"where the data from the cameras is being developed in real time,","制作的地形勘测地图，"],[610.43,"showing the red spots, which are where it doesn't want to step,","红点就是它不想踩的地方，"],[613.69,"and the green spots are the good places.","而绿点就是可行的区域。"],[615.71,"And here it's treating them like stepping-stones.","它把这些障碍物当做垫脚石。"],[618.18,"So it's trying to stay up on the blocks,","它会尝试待在板上，"],[620.96,"and it adjusts its stride,","调整步伐，"],[622.26,"and there's a ton of planning","像这样的行为"],[623.74,"that has to go into an operation like that,","包含了许多计划步骤。"],[626.01,"and it does all that planning in real time,","它时时刻刻都在计划着，"],[628.29,"where it adjusts the steps a little bit longer","把步伐调整得大一点，"],[630.75,"or a little bit shorter.","或者小一点。"],[633.4,"Now we're going to change it into a different mode,","现在我们来换一个模式，"],[635.85,"where it's just going to treat the blocks like terrain","让它把障碍当成地形来看，"],[639.3,"and decide whether to step up or down","在它走路时候来决定"],[643.04,"as it goes.","上来还是下去。"],[645.26,"So this is using dynamic balance","这就用到了动态平衡"],[648.26,"and mobile perception,","以及移动感知，"],[650.14,"because it has to coordinate what it sees along with how it's moving.","因为它要根据看到的场景 来协调自己的动作。"],[657.17,"The other thing Spot has is a robot arm.","另外，Spot还有一条机器人手臂。"],[662.52,"Some of you may see that as a head and a neck,","你们可能觉得长得像头或者是脖子，"],[665.03,"but believe me, it's an arm.","但是相信我，这是手臂。"],[666.64,"Seth is driving it around.","赛斯在驱动这条手臂。"],[668.43,"He's actually driving the hand and the body is following.","他实际上只需要操控手臂， 下面的身体会跟着运动。"],[672.22,"So the two are coordinated in the way I was talking about before --","所以这两个相互协调， 就如我之前提到过的——"],[676.38,"in the way people can do that.","就像人类一样。"],[678.27,"In fact, one of the cool things Spot can do we call, \"chicken-head mode,\"","实际上，Spot还可以做 一件很酷的事，称为“鸡头模式”。"],[682.93,"and it keeps its head in one place in space,","它的头保持不变，"],[686.14,"and it moves its body all around.","只是来回移动身体。"],[688.73,"There's a variation of this that's called \"twerking\" --","还有另一种模式叫“电臀”——"],[691.36,"(Laughter)","（笑声）"],[692.4,"but we're not going to use that today.","不过我们就不演示了。"],[694.25,"(Laughter)","（笑声）"],[695.34,"So, Spot: I'm feeling a little thirsty. Could you get me a soda?","Spot，我有点口渴， 能不能给我一杯饮料？"],[699.47,"For this demo, Seth is not doing any driving.","在这个演示中，Seth不会进行操控。"],[703.27,"We have a LIDAR on the back of the robot,","在机器人后边有LIDAR，"],[705.41,"and it's using these props we've put on the stage","用这些我们放在台上的道具"],[707.97,"to localize itself.","来定位自己。"],[709.38,"It's gone over to that location.","它现在走过去了，"],[711.69,"Now it's using a camera that's in its hand","在使用手上的摄像头"],[714.6,"to find the cup,","来找到杯子，"],[717.03,"picks it up --","拿起它——"],[718.31,"and again, Seth's not driving.","别忘了，赛斯并没有进行操控。"],[721.55,"We've planned out a path for it to go --","我们给它安排了路线，"],[724.82,"it looked like it was going off the path --","现在看来它好像走偏了——"],[726.95,"and now Seth's going to take over control again,","现在赛斯要恢复控制，"],[729.33,"because I'm a little bit chicken about having it do this by itself.","因为我有点不信任 让它自己完成这事。"],[732.8,"Thank you, Spot.","谢谢你，Spot。"],[736.41,"(Applause)","（掌声）"],[743.07,"So, Spot:","那么，Spot，"],[744.68,"How do you feel about having just finished your TED performance?","完成你的TED表演感觉怎么样？"],[749.19,"(Laughter)","（笑声）"],[752.25,"Me, too!","我也是！"],[753.42,"(Laughter)","（笑声）"],[754.48,"Thank you all,","谢谢大家。"],[756.32,"and thanks to the team at Boston Dynamics,","也感谢为这项任务付出努力的"],[758.74,"who did all the hard work behind this.","波士顿动力公司的团队。"],[760.88,"(Applause)","（掌声）"],[771.24,"Helen Walters: Marc, come back in the middle.","海伦·沃特斯： 马克，能回到场地中间吗？"],[773.43,"Thank you so much.","往前站一下，我有几个问题。"],[774.6,"Come over here, I have questions.","往前站一下，我有几个问题。"],[776.72,"So, you mentioned the UPS and the package delivery.","你提到了UPS和包裹递送。"],[780.16,"What are the other applications that you see for your robots?","你还在探索机器人的其他应用吗？"],[784.12,"Marc Raibert: You know, I think that robots","马克·莱伯特：我认为"],[786.17,"that have the capabilities I've been talking about","机器人将会拥有的能力"],[788.6,"are going to be incredibly useful.","会有非常大的用途。"],[790.29,"About a year ago, I went to Fukushima","大约一年以前，我去了福岛，"],[792.81,"to see what the situation was there,","想看看那里的情况，"],[794.86,"and there's just a huge need","对能够在污染地进行清理"],[796.76,"for machines that can go into some of the dirty places","和重建工作的机器人的"],[800.13,"and help remediate that.","需求会很大。"],[802.71,"I think it won't be too long until we have robots like this in our homes,","我认为我们的家里 很快也会有这样的机器人，"],[807.33,"and one of the big needs is to take care of the aging","还有就是对于照顾老人和伤残者"],[812.68,"and invalids.","这方面也有会很大需求。"],[814.07,"I think that it won't be too long till we're using robots","我同样认为我们依靠 机器人照顾父母"],[818.08,"to help take care of our parents,","也不会很久了。"],[820.57,"or probably more likely, have our children help take care of us.","更有可能的是，让孩子来照顾我们。"],[825.9,"And there's a bunch of other things.","还有很多的事情。"],[827.67,"I think the sky's the limit.","但我知道存在一种界线。"],[829.07,"Many of the ideas we haven't thought of yet,","很多点子我们还没有想出来，"],[831.35,"and people like you will help us think of new applications.","你们可以帮助我们 想一些新的应用。"],[834.97,"HW: So what about the dark side?","沃特斯：缺点有什么呢？"],[836.58,"What about the military?","军方呢？"],[838.43,"Are they interested?","军方感兴趣吗？"],[840.62,"MR: Sure, the military has been a big funder of robotics.","莱伯特：当然，军队是 自动机械的发源地。"],[844.28,"I don't think the military is the dark side myself,","我自己并不认为军用算是坏处，"],[848.5,"but I think, as with all advanced technology,","但是我认为先进的科技"],[852.4,"it can be used for all kinds of things.","可以用于所有领域。"],[854.47,"HW: Awesome. Thank you so much.","沃特斯：太棒了，谢谢你。"],[856.14,"MR: OK, you're welcome.","莱伯特：不客气。"],[857.57,"Thank you.","沃特斯：谢谢。"],[858.74,"(Applause)","掌声"]]},"5":{"mp4":"https://py.tedcdn.com/consus/projects/00/08/97/006/products/2011g-markus-fischer-006-fallback-63f4ec567886ac51874f8908bbc1b6fc-1200k.mp4","cues":[[0.64,"It is a dream of mankind to fly like a bird.","像鸟儿一样飞翔"],[4.91,"Birds are very agile.","鸟儿敏捷灵活。"],[7.0,"They fly, not with rotating components,","它们不需借助旋转构件即可飞翔，"],[10.36,"so they fly only by flapping their wings.","只要拍拍翅膀它们就能飞起来。"],[13.76,"So we looked at the birds,","所以我们仰望鸟儿，"],[16.0,"and we tried to make a model that is powerful, ultralight,","并尝试去建一个模型"],[22.37,"and it must have excellent aerodynamic qualities","并且具备卓越的空气动力性能"],[26.41,"that would fly by its own and only by flapping its wings.","从而拥有通过扇动翅膀"],[31.14,"So what would be better than to use the herring gull, in its freedom,","那么以什么鸟形建模好呢？"],[36.0,"circling and swooping over the sea,","在海面上空盘旋和俯冲，"],[38.34,"and to use this as a role model?","我们选择以此建模。"],[41.68,"So we bring a team together.","所以我们组建起一个团队。"],[43.66,"There are generalists and also specialists in the field of aerodynamics,","他们中有兼通各领域的多面手"],[48.77,"in the field of building gliders.","也有滑翔机制造专家。"],[51.33,"And the task was to build an ultralight indoor-flying model","我们的任务是"],[56.73,"that is able to fly over your heads.","可以飞过你们的头顶。"],[59.93,"So be careful later on.","所以一会儿要小心咯。"],[62.48,"(Laughter)","但这曾是一个问题："],[64.82,"And this was one issue:","但这曾是一个问题："],[66.28,"to build it that lightweight","怎么把它造得非常轻"],[68.0,"that no one would be hurt if it fell down.","轻到如果它掉下来"],[73.39,"So why do we do all this?","为什么我们要这么做？"],[75.36,"We are a company in the field of automation,","我们是一家从事自动化控制的公司，"],[78.31,"and we'd like to do very lightweight structures","打算采用非常轻型的结构"],[81.0,"because that's energy efficient,","因为这样更节能。"],[83.76,"and we'd like to learn more about pneumatics and air flow phenomena.","而我们也想对"],[89.85,"So I now would like you to put your seat belts on","现在希望诸位"],[94.3,"and put your hats on.","带好头盔。"],[96.54,"So maybe we'll try it once --","我们来尝试一次"],[99.64,"to fly a SmartBird.","放飞智能鸟吧。"],[101.14,"Thank you.","谢谢。"],[102.19,"(Applause)","（鼓掌）"],[118.63,"(Cheers)","（鼓掌）"],[119.9,"(Applause)","（鼓掌）"],[134.07,"(Applause ends)",""],[156.01,"(Applause)","（鼓掌）"],[172.44,"So we can now look at the SmartBird.","现在我们可以"],[177.82,"So here is one without a skin.","这里是一个没有外壳的。"],[180.33,"We have a wingspan of about two meters.","它的翼展约为两米。"],[183.56,"The length is one meter and six,","体长为一米六。"],[186.0,"and the weight is only 450 grams.","而体重"],[190.79,"And it is all out of carbon fiber.","它整体都是碳纤维材料做的。"],[194.0,"In the middle we have a motor,","在中间有一个马达，"],[196.48,"and we also have a gear in it,","和齿轮结构。"],[200.0,"and we use the gear to transfer the circulation of the motor.","我们利用齿轮"],[205.64,"So within the motor, we have three Hall sensors,","马达上有三个霍尔传感器，"],[208.85,"so we know exactly where the wing is.","那么我们就知道"],[214.45,"And if we now beat up and down --","如果让这翅膀上下拍打的话"],[217.47,"(Mechanical sounds)",""],[221.44,"We have the possibility to fly like a bird.","那我们就有可能"],[225.52,"So if you go down, you have the large area of propulsion,","当俯冲的时候，它的推进面积足够大。"],[229.16,"and if you go up,","同时上行的时候，"],[232.28,"the wings are not that large,","翅膀也不是非常大，"],[235.0,"and it is easier to get up.","所以它比较容易爬升。"],[239.87,"So, the next thing we did,","所以下一个事情，"],[242.94,"or the challenges we did,","或者说下一个挑战我们面对的"],[244.74,"was to coordinate this movement.","是如何协调这种运动。"],[247.78,"We have to turn it, go up and go down.","我们必须使它飞上飞下。"],[250.99,"We have a split wing.","我们采用了分裂式翼。"],[252.55,"With the split wing,","通过分裂式的翅膀设计"],[254.0,"we get the lift at the upper wing,","使它通过上层翼得到升力，"],[257.0,"and we get the propulsion at the lower wing.","下层翼得到推进力。"],[260.24,"Also, we see how we measure the aerodynamic efficiency.","同时，我们也知道"],[265.48,"We had knowledge about the electromechanical efficiency","我们必须掌握"],[269.73,"and then we can calculate the aerodynamic efficiency.","然后就能计算出"],[273.72,"So therefore, it rises up from passive torsion to active torsion,","所以，"],[279.06,"from 30 percent up to 80 percent.","80%。"],[282.32,"Next thing we have to do,","下一件我们要做的，"],[284.2,"we have to control and regulate the whole structure.","就是要控制和调整"],[288.33,"Only if you control and regulate it,","只有控制和调整好它"],[290.92,"you will get that aerodynamic efficiency.","才能得到预期的空气动力效能。"],[294.24,"So the overall consumption of energy","所以整体能量消耗"],[297.35,"is about 25 watts at takeoff","大概是起飞25瓦"],[300.58,"and 16 to 18 watts in flight.","飞行是16到18瓦特。"],[304.14,"Thank you.","（鼓掌）"],[305.17,"(Applause)","（鼓掌）"],[311.77,"Bruno Giussani: Markus, we should fly it once more.","布鲁诺·朱桑尼：马库斯，不如我们再放飞一次怎么样。"],[314.35,"Markus Fischer: Yeah, sure.","马库斯·菲舍尔：当然。"],[315.77,"(Audience) Yeah!","（笑声）"],[316.87,"(Laughter)","（笑声）"],[338.12,"(Gasps)","（惊叹）"],[346.81,"(Cheers)","（欢呼）"],[348.63,"(Applause)","（鼓掌）"]]}};
 var TED = "https://www.ted.com/talks/";
 var EMBED = "https://embed.ted.com/talks/";
-function tedLesson(day, slug, title, topic, note, quiz){
-  return {day:day, title:title, topic:topic, url:TED+slug, embed:EMBED+slug, transcript:TED+slug+"/transcript", note:note||"", quiz:quiz||[]};
+function tedLesson(day, slug, title, topic, note, quiz, endAt){
+  var c = CUES[day] || {};
+  return {day:day, title:title, topic:topic, url:TED+slug, embed:EMBED+slug,
+    transcript:TED+slug+"/transcript", note:note||"", quiz:quiz||[],
+    mp4:c.mp4||"", cues:c.cues||[], endAt:endAt||0};
 }
 var BUILTIN = [
   tedLesson(1, "matt_cutts_try_something_new_for_30_days",
-    "30 天尝试新事物 · Matt Cutts", "TED 演讲 · 约 3 分半 · 入门",
-    "最短的一篇，先拿它把流程跑顺。第一遍关字幕只听，第二遍再开英文字幕逐句抠。",
+    "30 天尝试新事物 · Matt Cutts", "TED 演讲 · 约 3 分钟 · 入门",
+    "最短的一篇，先拿它把流程跑顺：第一遍关中文、只看英文字幕，听不懂的词点一下存生词；第二遍切「第二遍」模式看中文释义。",
     [
       {q:"他建议大家做的事是什么？", a:"挑一件一直想做没做的事，连续坚持做 30 天。"},
       {q:"他说 30 天这个长度有什么特别？", a:"正好够长到能养成（或戒掉）一个习惯，又短到不会让人半途放弃。"},
@@ -244,7 +316,7 @@ var BUILTIN = [
     ]),
   tedLesson(2, "david_gallo_underwater_astonishments",
     "深海里的神奇生物 · David Gallo", "TED 演讲 · 约 5 分半 · 海洋科学",
-    "画面很强，但要求你第一遍先只听声音、不看画面，练耳朵抓信息。",
+    "画面很强，但第一遍先只听声音、看英文字幕，别被画面带走注意力。",
     [
       {q:"视频里的章鱼展示了什么本事？", a:"完美伪装——瞬间变得和周围环境一模一样，像凭空消失。"},
       {q:"乌贼（cuttlefish）出名的是什么能力？", a:"快速改变体色和纹理，变色能力极强。"},
@@ -252,23 +324,23 @@ var BUILTIN = [
     ]),
   tedLesson(3, "angela_lee_duckworth_grit_the_power_of_passion_and_perseverance",
     "毅力：热情与坚持的力量 · Angela Duckworth", "TED 演讲 · 约 6 分钟 · 心理学",
-    "研究型演讲，结构和托福讲座最像（提出问题→几组研究→结论），重点听她的转折词和结论句。",
+    "研究型演讲，结构和托福讲座最像（提出问题→几组研究→结论），重点听转折词和结论句。",
     [
       {q:"她说的 grit（毅力）到底指什么？", a:"对长期目标的热情加上坚持不懈——盯着几年后的目标一直做下去。"},
       {q:"她是在什么工作里发现 IQ 不是决定因素的？", a:"在纽约公立学校当七年级数学老师时，发现聪明的学生不一定学得好。"},
       {q:"她的研究结论是什么？", a:"在西点军校学员、拼字比赛选手等群体里，grit 是成功的重要预测指标，比 IQ 和天赋更管用。"}
     ]),
   tedLesson(4, "marc_raibert_meet_spot_the_robot_dog_that_can_run_hop_and_open_doors",
-    "机器狗 Spot · Marc Raibert（波士顿动力）", "TED 演讲 · 全长约 14 分半，只练前 8 分钟",
-    "跟你的具身智能方向正对口。全长太长，只练前 8 分钟（讲设计原则和各代机器人的部分），后面的现场演示不用管。",
+    "机器狗 Spot · Marc Raibert（波士顿动力）", "TED 演讲 · 全长约 14 分半，今天只练前 8 分钟",
+    "跟你的具身智能方向正对口。视频播到 8 分钟会自动停——今天只练前半段（设计原则 + 各代机器人），后面的现场演示不用管。",
     [
       {q:"波士顿动力做机器人的三条设计原则是什么？", a:"平衡（balance）、灵巧（dexterity）、感知（perception）。"},
       {q:"SpotMini 在现场演示里做了什么？", a:"自己绘制周围环境的地图、绕过障碍物，还按指令给 Raibert 送了一罐饮料。"},
       {q:"Handle 这款机器人特别在哪？", a:"脚是轮子，能举起 100 磅的包裹，还能跳上桌子。"}
-    ]),
+    ], 480),
   tedLesson(5, "markus_fischer_a_robot_that_flies_like_a_bird",
-    "像鸟一样飞的机器人 · Markus Fischer", "TED 演讲 · 约 7 分钟 · 仿生工程",
-    "讲者是德国工程师，带一点口音——正好练真实听力（托福之外的口音适应）。内容是仿生扑翼，和你的方向也对口。",
+    "像鸟一样飞的机器人 · Markus Fischer", "TED 演讲 · 约 6 分钟 · 仿生工程",
+    "讲者是德国工程师，带一点口音——正好练真实听力适应。内容是仿生扑翼，和你的方向也对口。",
     [
       {q:"SmartBird 仿的是哪种鸟？", a:"海鸥（herring gull）。"},
       {q:"它和普通无人机/飞机最大的不同是什么？", a:"靠扇动翅膀扑翼飞行，而不是螺旋桨或固定翼。"},
@@ -276,12 +348,12 @@ var BUILTIN = [
     ])
 ];
 var PHASES = [
-  {min:15, name:"精听", desc:"先关字幕把视频听一遍抓大意；再开英文字幕一句一句抠，听不出的看 TED 原文稿那句、倒回去重听；最后做下面的自测题。"},
-  {min:10, name:"生词", desc:"把「看了认识、听时没反应过来」的词连原句记进下面的生词本，只收这类词。"},
-  {min:5,  name:"跟读", desc:"挑讲座里 30 秒到 1 分钟，音频放一句、你跟一句，模仿语调和连读。"}
+  {min:15, name:"精听", desc:"第一遍：只看英文字幕听完，听不懂的词点一下存生词；再切第二遍模式逐句抠（点句子可重播那句），对照中文释义；最后做自测题。"},
+  {min:10, name:"生词", desc:"去「生词复习」页过一遍今天点存的词，再手动补几个「看了认识、听时没反应过来」的词。"},
+  {min:5,  name:"跟读", desc:"用「循环本句」挑 30 秒到 1 分钟，视频放一句、你跟一句，模仿语调和连读。"}
 ];
 var KEY = "toeflDaily.v1";
-var BOX_INTERVAL = {1:1, 2:2, 3:4}; /* 盒号 → 下次出现间隔（天） */
+var BOX_INTERVAL = {1:1, 2:2, 3:4};
 var state = load();
 function load(){
   var s = null;
@@ -291,7 +363,7 @@ function load(){
   if(!s.scores) s.scores = [];
   if(!s.words) s.words = [];
   if(!s.customLessons) s.customLessons = [];
-  /* 旧数据迁移：生词补 Leitner 字段 */
+  if(typeof s.subOffset !== "number") s.subOffset = 0;
   for(var i=0;i<s.words.length;i++){
     var w = s.words[i];
     if(typeof w.box !== "number") w.box = 1;
@@ -305,6 +377,7 @@ function dstr(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"
 function todayStr(){ return dstr(new Date()); }
 function addDays(base, n){ var d = new Date(base.getFullYear(), base.getMonth(), base.getDate()+n); return dstr(d); }
 function yesterdayStr(){ return addDays(new Date(), -1); }
+function esc(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 function allLessons(){
   var list = BUILTIN.slice();
@@ -318,27 +391,175 @@ function currentLesson(){
   return null;
 }
 function wordDue(w){ return !w.known && (!w.due || w.due <= todayStr()); }
+function wordSet(){
+  var set = {};
+  for(var i=0;i<state.words.length;i++) set[state.words[i].word.toLowerCase()] = true;
+  return set;
+}
 
-/* ============ 渲染 ============ */
+/* ============ 视图切换 ============ */
+var tabBtns = document.querySelectorAll(".tabbar button");
+function showView(name){
+  var views = ["practice","review","lessons","data"];
+  for(var i=0;i<views.length;i++){
+    document.getElementById("view-"+views[i]).classList.toggle("on", views[i]===name);
+  }
+  for(var j=0;j<tabBtns.length;j++) tabBtns[j].classList.toggle("on", tabBtns[j].getAttribute("data-view")===name);
+  if(name==="review") renderReview();
+  window.scrollTo(0,0);
+}
+for(var tb=0; tb<tabBtns.length; tb++){
+  tabBtns[tb].addEventListener("click", function(){ showView(this.getAttribute("data-view")); });
+}
+
+/* ============ 视频 + 字幕 ============ */
+var vid = document.getElementById("vid");
+var subsBox = document.getElementById("subsBox");
+var loadedDay = null, curCueIdx = -1, loopCue = false, userScrollAt = 0, endStopped = false;
+function cleanWord(tok){ return tok.replace(/^[^A-Za-z']+|[^A-Za-z']+$/g,""); }
+function renderSubs(L){
+  curCueIdx = -1;
+  if(!L || !L.cues || !L.cues.length){
+    subsBox.innerHTML = '<div class="mini">这一篇没有同步字幕（自加篇目），用上面的内嵌视频看，原文稿点「TED 原文稿」。</div>';
+    return;
+  }
+  var set = wordSet();
+  var html = "";
+  for(var i=0;i<L.cues.length;i++){
+    var cue = L.cues[i];
+    var toks = cue[1].split(/\s+/);
+    var en = "";
+    for(var j=0;j<toks.length;j++){
+      var tok = toks[j], cw = cleanWord(tok);
+      if(cw && /[A-Za-z]/.test(cw)){
+        en += '<span class="w'+(set[cw.toLowerCase()]?" marked":"")+'" data-w="'+esc(cw)+'" data-cue="'+i+'">'+esc(tok)+'</span> ';
+      } else { en += esc(tok) + " "; }
+    }
+    html += '<div class="cue" data-i="'+i+'"><div class="en">'+en+'</div>'
+          + (cue[2] ? '<div class="zh">'+esc(cue[2])+'</div>' : '') + '</div>';
+  }
+  subsBox.innerHTML = html;
+}
+function cueEnd(L, i){ return (i+1 < L.cues.length) ? L.cues[i+1][0] : L.cues[i][0] + 5; }
+function syncSubs(){
+  var L = currentLesson();
+  if(!L || !L.cues || !L.cues.length || loadedDay !== L.day) return;
+  var t = vid.currentTime - state.subOffset;
+  var idx = -1;
+  for(var i=0;i<L.cues.length;i++){ if(L.cues[i][0] <= t) idx = i; else break; }
+  if(loopCue && curCueIdx >= 0 && idx > curCueIdx){
+    vid.currentTime = L.cues[curCueIdx][0] + state.subOffset + 0.01;
+    return;
+  }
+  if(L.endAt && vid.currentTime > L.endAt && !endStopped){
+    endStopped = true; vid.pause();
+    document.getElementById("lessonNote").style.display = "block";
+    document.getElementById("lessonNote").textContent = "已播到今天要练的 8 分钟，后半段不用管，去做自测题记分吧。";
+  }
+  if(idx === curCueIdx) return;
+  curCueIdx = idx;
+  var prev = subsBox.querySelector(".cue.cur");
+  if(prev) prev.classList.remove("cur");
+  if(idx >= 0){
+    var el = subsBox.querySelector('.cue[data-i="'+idx+'"]');
+    if(el){
+      el.classList.add("cur");
+      if(Date.now() - userScrollAt > 5000) el.scrollIntoView({block:"center", behavior:"smooth"});
+    }
+  }
+}
+vid.addEventListener("timeupdate", syncSubs);
+subsBox.addEventListener("scroll", function(){ userScrollAt = Date.now(); });
+subsBox.addEventListener("click", function(e){
+  var L = currentLesson(); if(!L || !L.cues) return;
+  var wEl = e.target.closest(".w");
+  if(wEl){
+    var word = wEl.getAttribute("data-w");
+    var cue = L.cues[parseInt(wEl.getAttribute("data-cue"),10)];
+    toggleWord(word, cue ? cue[1] : "");
+    e.stopPropagation();
+    return;
+  }
+  var cueEl = e.target.closest(".cue");
+  if(cueEl){
+    var i = parseInt(cueEl.getAttribute("data-i"),10);
+    vid.currentTime = L.cues[i][0] + state.subOffset + 0.01;
+    endStopped = false;
+    vid.play();
+  }
+});
+function toggleWord(word, sentence){
+  var lw = word.toLowerCase();
+  var found = -1;
+  for(var i=0;i<state.words.length;i++){ if(state.words[i].word.toLowerCase() === lw){ found = i; break; } }
+  if(found >= 0){ state.words.splice(found,1); }
+  else { state.words.push({word:word, sentence:sentence, known:false, box:1, due:todayStr()}); }
+  save();
+  var spans = subsBox.querySelectorAll(".w");
+  for(var j=0;j<spans.length;j++){
+    if(spans[j].getAttribute("data-w").toLowerCase() === lw) spans[j].classList.toggle("marked", found < 0);
+  }
+  document.getElementById("wordNum").textContent = state.words.length;
+}
+document.getElementById("back5v").addEventListener("click", function(){ vid.currentTime = Math.max(0, vid.currentTime - 5); });
+document.getElementById("fwd5v").addEventListener("click", function(){ vid.currentTime = Math.min(vid.duration || 1e9, vid.currentTime + 5); });
+document.getElementById("loopCue").addEventListener("click", function(){
+  loopCue = !loopCue;
+  this.classList.toggle("on", loopCue);
+  this.textContent = loopCue ? "循环本句 · 开" : "循环本句";
+});
+var SPEEDS = [0.75, 1, 1.25], speedIdx = 1;
+document.getElementById("speedBtn").addEventListener("click", function(){
+  speedIdx = (speedIdx + 1) % SPEEDS.length;
+  vid.playbackRate = SPEEDS[speedIdx];
+  this.textContent = SPEEDS[speedIdx] + "× 速度";
+});
+function drawOffset(){ document.getElementById("offVal").textContent = "偏移 " + state.subOffset.toFixed(1) + "s"; }
+document.getElementById("offMinus").addEventListener("click", function(){
+  state.subOffset = Math.max(-10, state.subOffset - 0.5); save(); drawOffset(); curCueIdx = -1; syncSubs();
+});
+document.getElementById("offPlus").addEventListener("click", function(){
+  state.subOffset = Math.min(10, state.subOffset + 0.5); save(); drawOffset(); curCueIdx = -1; syncSubs();
+});
+function setPass(p){
+  subsBox.classList.toggle("pass2", p === 2);
+  document.getElementById("pass1Btn").className = "btn " + (p===1 ? "on" : "ghost");
+  document.getElementById("pass2Btn").className = "btn " + (p===2 ? "on" : "ghost");
+}
+document.getElementById("pass1Btn").addEventListener("click", function(){ setPass(1); });
+document.getElementById("pass2Btn").addEventListener("click", function(){ setPass(2); });
+
+function loadLesson(L){
+  var vw = document.getElementById("videoWrap"), vf = document.getElementById("videoFrame");
+  endStopped = false; curCueIdx = -1;
+  if(!L){ loadedDay = null; vid.removeAttribute("src"); vid.style.display = "none"; vw.style.display = "none"; renderSubs(null); return; }
+  loadedDay = L.day;
+  if(L.mp4){
+    vid.style.display = "block"; vw.style.display = "none"; vf.src = "";
+    if(vid.getAttribute("src") !== L.mp4) vid.src = L.mp4;
+  } else if(L.embed){
+    vid.style.display = "none"; vid.pause(); vw.style.display = "block";
+    if(vf.getAttribute("src") !== L.embed) vf.src = L.embed;
+  } else {
+    vid.style.display = "none"; vw.style.display = "none";
+  }
+  renderSubs(L);
+}
+
+/* ============ 主渲染 ============ */
 function render(){
   var doneCount = Object.keys(state.done).length;
   document.getElementById("streakNum").textContent = state.streak;
   document.getElementById("doneNum").textContent = doneCount;
   document.getElementById("wordNum").textContent = state.words.length;
-
-  renderCal();
-  renderChart();
+  renderCal(); renderChart();
 
   var cur = currentLesson();
   if(cur){
     document.getElementById("todayTitle").textContent = "Day " + cur.day + " · " + cur.title;
-    document.getElementById("todayMeta").textContent = cur.topic + " · TED 官方演讲，免费，带原文稿";
+    document.getElementById("todayMeta").textContent = "今日演讲 · " + cur.topic + " · TED 官方，免费带双语字幕";
     var a = document.getElementById("todayLink");
-    a.href = cur.url; a.textContent = "在 TED 打开原页";
-    var vw = document.getElementById("videoWrap");
-    var vf = document.getElementById("videoFrame");
-    if(cur.embed){ vw.style.display = "block"; if(vf.getAttribute("src") !== cur.embed) vf.src = cur.embed; }
-    else { vw.style.display = "none"; vf.src = ""; }
+    a.href = cur.url; a.style.display = ""; a.textContent = "TED 原页";
     var tt = document.getElementById("todayTranscript");
     if(cur.transcript){ tt.style.display = ""; tt.href = cur.transcript; } else { tt.style.display = "none"; }
     var ln = document.getElementById("lessonNote");
@@ -348,14 +569,15 @@ function render(){
       hint.style.display = "block";
       hint.textContent = "补练规则：前面有没练完的，先从最早缺的那篇开始，就是这一篇，别跳着练。";
     } else { hint.style.display = "none"; }
+    if(loadedDay !== cur.day) loadLesson(cur); else renderSubs(cur);
   } else {
-    document.getElementById("todayTitle").textContent = "已排的讲座都练完了 🎉";
-    document.getElementById("todayMeta").textContent = "可以在下面课程表里自己加新讲座（粘 TED 链接会自动内嵌），或跟 Muse 要下一篇。";
+    document.getElementById("todayTitle").textContent = "已排的演讲都练完了 🎉";
+    document.getElementById("todayMeta").textContent = "去课程表页自己加新演讲，或跟 Muse 要下一篇。";
     document.getElementById("todayLink").style.display = "none";
     document.getElementById("todayTranscript").style.display = "none";
-    document.getElementById("videoWrap").style.display = "none";
     document.getElementById("lessonNote").style.display = "none";
     document.getElementById("catchupHint").style.display = "none";
+    loadLesson(null);
   }
 
   var ph = "";
@@ -376,18 +598,6 @@ function render(){
   }
   document.getElementById("scoreHist").innerHTML = h || "还没有记录。练完第一篇，把分数填进来。";
 
-  var wl = "";
-  for(var k=state.words.length-1;k>=0;k--){
-    var w = state.words[k];
-    var tag = w.known ? '<span class="tag ok">已掌握</span>'
-            : (wordDue(w) ? '<span class="tag due">待复习 · '+w.box+' 盒</span>' : '<span class="tag">'+w.box+' 盒 · '+w.due.slice(5)+' 再练</span>');
-    wl += '<div class="word"><span class="w">'+esc(w.word)+'</span>' + tag
-        + '<div class="s">'+esc(w.sentence||"")+'</div>'
-        + '<div style="margin-top:6px;"><button class="btn ghost small" data-act="toggle" data-i="'+k+'">'+(w.known?"标回待复习":"标记已掌握")+'</button> '
-        + '<button class="btn ghost small" data-act="del" data-i="'+k+'">删除</button></div></div>';
-  }
-  document.getElementById("wordList").innerHTML = wl || '<div class="hist" style="margin-top:8px;">还是空的。今天精听时把没听出来的词加进来。</div>';
-
   var list = allLessons();
   var ll = "";
   for(var m=0;m<list.length;m++){
@@ -402,25 +612,25 @@ function render(){
   document.getElementById("lessonList").innerHTML = ll;
 
   renderQuiz(cur);
-  buildQueue();
-  renderFlash();
+  renderWordList();
 }
 function renderQuiz(cur){
   var box = document.getElementById("quizBox");
   if(!cur || !cur.quiz || !cur.quiz.length){
-    box.innerHTML = '<div class="mini" style="margin-bottom:8px;">这一篇没有配自测题，练完按自己的理解程度记分，或直接点「保存并完成今天」时总题数填 3、按答对的感觉给分。</div>';
+    box.innerHTML = '<div class="mini" style="margin-bottom:10px;">这一篇没有配自测题，练完直接点「保存并完成今天」。</div>';
     return;
   }
   var html = '<div class="mini" style="margin-bottom:4px;">Day ' + cur.day + ' 自测题（先口头回答，再点题目看答案对照）：</div>';
   for(var i=0;i<cur.quiz.length;i++){
-    html += '<div class="quiz" data-quiz="'+i+'"><div class="qq">'+(i+1)+'. '+esc(cur.quiz[i].q)+'</div><div class="qa">参考答案：'+esc(cur.quiz[i].a)+'</div></div>';
+    html += '<div class="quiz"><div class="qq">'+(i+1)+'. '+esc(cur.quiz[i].q)+'</div><div class="qa">参考答案：'+esc(cur.quiz[i].a)+'</div></div>';
   }
   box.innerHTML = html;
   var total = document.getElementById("scoreTotal");
   if(!total.value) total.value = cur.quiz.length;
 }
-function esc(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-
+document.getElementById("quizBox").addEventListener("click", function(e){
+  var q = e.target.closest(".quiz"); if(q) q.classList.toggle("show");
+});
 function practicedDates(){
   var set = {};
   for(var d in state.done) set[state.done[d]] = true;
@@ -443,24 +653,19 @@ function renderChart(){
   var sc = state.scores.slice(-10);
   if(sc.length < 1){ wrap.innerHTML = ""; return; }
   var W = 320, H = 84, P = 8;
-  var pts = "";
+  var pts = "", dots = "";
   for(var i=0;i<sc.length;i++){
     var x = sc.length===1 ? W/2 : P + i*(W-2*P)/(sc.length-1);
     var y = H - P - (sc[i].right/sc[i].total)*(H-2*P);
     pts += x.toFixed(1)+","+y.toFixed(1)+" ";
-  }
-  var dots = "";
-  for(var j=0;j<sc.length;j++){
-    var x2 = sc.length===1 ? W/2 : P + j*(W-2*P)/(sc.length-1);
-    var y2 = H - P - (sc[j].right/sc[j].total)*(H-2*P);
-    dots += '<circle cx="'+x2.toFixed(1)+'" cy="'+y2.toFixed(1)+'" r="3.5" fill="#4da3ff"/>';
+    dots += '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="3.5" fill="#0071e3"/>';
   }
   wrap.innerHTML = '<div class="mini" style="margin-bottom:4px;">最近 '+sc.length+' 篇正确率走势</div>'
     + '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;">'
-    + '<polyline points="'+pts+'" fill="none" stroke="#4da3ff" stroke-width="2"/>'+dots+'</svg>';
+    + '<polyline points="'+pts+'" fill="none" stroke="#0071e3" stroke-width="2"/>'+dots+'</svg>';
 }
 
-/* ============ 计时器（时间戳版，切后台不漂移） ============ */
+/* ============ 计时器（时间戳版） ============ */
 var curPhase = 0, remainSec = PHASES[0].min*60, timerId = null, running = false, endAt = 0;
 function fmt(s){ return String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.max(s%60,0)).padStart(2,"0"); }
 function drawTimer(){ document.getElementById("timerText").textContent = fmt(Math.max(remainSec,0)); }
@@ -486,12 +691,148 @@ document.getElementById("timerReset").addEventListener("click", function(){
 document.getElementById("phaseDone").addEventListener("click", function(){
   stopTimer();
   if(curPhase < PHASES.length-1){ curPhase++; }
-  else { curPhase = 0; alert("三步都走完了！去上面记录今天的做题分数，就算完成今天。"); }
+  else { curPhase = 0; alert("三步都走完了！去记录今天的做题分数，就算完成今天。"); }
   remainSec = PHASES[curPhase].min*60; drawTimer(); render();
 });
 document.addEventListener("visibilitychange", function(){ if(running) tick(); });
 
-/* ============ 音频播放器 ============ */
+/* ============ 分数 ============ */
+document.getElementById("scoreSave").addEventListener("click", function(){
+  var r = parseInt(document.getElementById("scoreRight").value,10);
+  var t = parseInt(document.getElementById("scoreTotal").value,10);
+  var judge = document.getElementById("scoreJudge");
+  if(isNaN(r)||isNaN(t)||t<=0||r<0||r>t){ judge.innerHTML = '<div class="hint">先把分数填对：答对数不能大于总题数。</div>'; return; }
+  var cur = currentLesson();
+  if(!cur){ judge.innerHTML = '<div class="hint">已排的演讲都完成了，先在课程表里加一篇新的再记分。</div>'; return; }
+  state.scores.push({day:cur.day, right:r, total:t, date:todayStr()});
+  state.done[cur.day] = todayStr();
+  if(state.lastDate !== todayStr()){
+    state.streak = (state.lastDate === yesterdayStr()) ? state.streak+1 : 1;
+    state.lastDate = todayStr();
+  }
+  save();
+  var ratio = r/t;
+  var msg, cls;
+  if(ratio >= 2/3){ msg = "这个正确率（"+r+"/"+t+"）说明这一档难度正合适，下一篇保持同难度。"; cls="ok-note"; }
+  else if(ratio <= 1/3){ msg = "正确率偏低（"+r+"/"+t+"），是材料跳太快了——把这个分数发给 Muse，下一篇给你降一档。"; cls="hint"; }
+  else { msg = "正确率（"+r+"/"+t+"）在中间档：正在进步区，保持这个难度再练两篇看看。把分数发给 Muse 定下一档。"; cls="ok-note"; }
+  judge.innerHTML = '<div class="'+cls+'">'+msg+'</div>';
+  render();
+});
+
+/* ============ 生词本 + 复习 ============ */
+function renderWordList(){
+  var wl = "";
+  for(var k=state.words.length-1;k>=0;k--){
+    var w = state.words[k];
+    var tag = w.known ? '<span class="tag ok">已掌握</span>'
+            : (wordDue(w) ? '<span class="tag due">待复习 · '+w.box+' 盒</span>' : '<span class="tag">'+w.box+' 盒 · '+w.due.slice(5)+' 再练</span>');
+    wl += '<div class="word"><span class="w">'+esc(w.word)+'</span>' + tag
+        + '<div class="s">'+esc(w.sentence||"")+'</div>'
+        + '<div style="margin-top:6px;"><button class="btn ghost small" data-act="toggle" data-i="'+k+'">'+(w.known?"标回待复习":"标记已掌握")+'</button> '
+        + '<button class="btn ghost small" data-act="del" data-i="'+k+'">删除</button></div></div>';
+  }
+  document.getElementById("wordList").innerHTML = wl || '<div class="hist" style="margin-top:8px;">还是空的。练习时在字幕里点单词就能存进来。</div>';
+}
+document.getElementById("wordAdd").addEventListener("click", function(){
+  var w = document.getElementById("wordInput").value.trim();
+  var s = document.getElementById("wordSentence").value.trim();
+  if(!w){ alert("先填单词。"); return; }
+  state.words.push({word:w, sentence:s, known:false, box:1, due:todayStr()});
+  save();
+  document.getElementById("wordInput").value = "";
+  document.getElementById("wordSentence").value = "";
+  render();
+});
+document.getElementById("wordList").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  var i = parseInt(b.getAttribute("data-i"),10);
+  if(b.getAttribute("data-act")==="toggle"){
+    var w = state.words[i];
+    w.known = !w.known;
+    if(!w.known){ w.box = 1; w.due = todayStr(); }
+  }
+  if(b.getAttribute("data-act")==="del"){ state.words.splice(i,1); }
+  save(); render(); renderReview();
+});
+var queue = [], qIdx = 0;
+function buildQueue(){
+  queue = [];
+  for(var i=0;i<state.words.length;i++){ if(wordDue(state.words[i])) queue.push(i); }
+  qIdx = 0;
+}
+function renderFlash(){
+  var card = document.getElementById("flashCard");
+  card.classList.remove("show");
+  var info = document.getElementById("dueInfo");
+  if(!state.words.length){
+    info.textContent = "生词本还是空的，去练习页点字幕里的单词存进来。";
+    document.getElementById("flashWord").textContent = "暂无生词";
+    document.getElementById("flashSent").textContent = "";
+    return;
+  }
+  if(!queue.length){
+    info.textContent = "今天到期的词都复习完了 ✔ 没到期的到日子会自动出现。";
+    document.getElementById("flashWord").textContent = "今日复习完成 🎉";
+    document.getElementById("flashSent").textContent = "";
+    return;
+  }
+  if(qIdx >= queue.length) qIdx = 0;
+  info.textContent = "今日待复习 " + queue.length + " 个（第 " + (qIdx+1) + " 个）";
+  var w = state.words[queue[qIdx]];
+  document.getElementById("flashWord").textContent = w.word;
+  document.getElementById("flashSent").textContent = w.sentence || "（没记原句）";
+}
+function renderReview(){ buildQueue(); renderFlash(); renderWordList(); }
+document.getElementById("flashCard").addEventListener("click", function(){ this.classList.toggle("show"); });
+document.getElementById("flashYes").addEventListener("click", function(){
+  if(!queue.length) return;
+  var w = state.words[queue[qIdx]];
+  if(w.box >= 3){ w.known = true; }
+  else { w.box = w.box + 1; w.due = addDays(new Date(), BOX_INTERVAL[w.box]); }
+  save(); render(); renderReview();
+});
+document.getElementById("flashNo").addEventListener("click", function(){
+  if(!queue.length) return;
+  var w = state.words[queue[qIdx]];
+  w.box = 1; w.due = todayStr();
+  save();
+  var cur = queue[qIdx];
+  queue.splice(qIdx,1); queue.push(cur);
+  if(qIdx >= queue.length) qIdx = 0;
+  renderFlash();
+  document.getElementById("dueInfo").textContent = "今日待复习 " + queue.length + " 个（第 " + (qIdx+1) + " 个）";
+});
+
+/* ============ 课程表：加/删 ============ */
+document.getElementById("lessonAdd").addEventListener("click", function(){
+  var t = document.getElementById("newTitle").value.trim();
+  var tp = document.getElementById("newTopic").value.trim();
+  var u = document.getElementById("newUrl").value.trim();
+  if(!t || !u){ alert("标题和链接必填，主题可空。"); return; }
+  if(u.indexOf("http") !== 0){ alert("链接要以 http 开头，检查一下有没有粘全。"); return; }
+  var list = allLessons();
+  var nextDay = list.length ? list[list.length-1].day + 1 : 1;
+  var embed = "", transcript = "";
+  var mm = u.match(/ted\.com\/talks\/([a-z0-9_]+)/i);
+  if(mm){ embed = "https://embed.ted.com/talks/" + mm[1]; transcript = "https://www.ted.com/talks/" + mm[1] + "/transcript"; }
+  state.customLessons.push({day:nextDay, title:t, topic:tp || "演讲", url:u, embed:embed, transcript:transcript, note:"", quiz:[], custom:true});
+  save();
+  document.getElementById("newTitle").value = "";
+  document.getElementById("newTopic").value = "";
+  document.getElementById("newUrl").value = "";
+  render();
+  alert("已加为 Day " + nextDay + "。练完前面的，它会自动成为今日演讲。");
+});
+document.getElementById("lessonList").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-del-lesson]"); if(!b) return;
+  var day = parseInt(b.getAttribute("data-del-lesson"),10);
+  if(!confirm("删掉 Day " + day + " 这篇自加演讲？")) return;
+  state.customLessons = state.customLessons.filter(function(L){ return L.day !== day; });
+  save(); render();
+});
+
+/* ============ 自备音频工具 ============ */
 var player = document.getElementById("player");
 var abA = null, abB = null;
 function abShow(){
@@ -518,139 +859,10 @@ for(var rb=0; rb<rateBtns.length; rb++){
   });
 }
 document.getElementById("setA").addEventListener("click", function(){ abA = player.currentTime; if(abB!==null && abB<=abA) abB = null; abShow(); });
-document.getElementById("setB").addEventListener("click", function(){ abB = player.currentTime; if(abA===null || abB<=abA){ alert("B 点要在 A 点之后。先在更早的位置设 A 点。"); abB = null; } abShow(); });
+document.getElementById("setB").addEventListener("click", function(){ abB = player.currentTime; if(abA===null || abB<=abA){ alert("B 点要在 A 点之后。"); abB = null; } abShow(); });
 document.getElementById("clearAB").addEventListener("click", function(){ abA = abB = null; abShow(); });
 player.addEventListener("timeupdate", function(){
   if(abA!==null && abB!==null && player.currentTime >= abB){ player.currentTime = abA; }
-});
-
-document.getElementById("quizBox").addEventListener("click", function(e){
-  var q = e.target.closest(".quiz"); if(q) q.classList.toggle("show");
-});
-
-/* ============ 分数 ============ */
-document.getElementById("scoreSave").addEventListener("click", function(){
-  var r = parseInt(document.getElementById("scoreRight").value,10);
-  var t = parseInt(document.getElementById("scoreTotal").value,10);
-  var judge = document.getElementById("scoreJudge");
-  if(isNaN(r)||isNaN(t)||t<=0||r<0||r>t){ judge.innerHTML = '<div class="hint">先把分数填对：答对数不能大于总题数。</div>'; return; }
-  var cur = currentLesson();
-  if(!cur){ judge.innerHTML = '<div class="hint">已排的讲座都完成了，先在课程表里加一篇新的再记分。</div>'; return; }
-  state.scores.push({day:cur.day, right:r, total:t, date:todayStr()});
-  state.done[cur.day] = todayStr();
-  if(state.lastDate !== todayStr()){
-    state.streak = (state.lastDate === yesterdayStr()) ? state.streak+1 : 1;
-    state.lastDate = todayStr();
-  }
-  save();
-  var ratio = r/t;
-  var msg, cls;
-  if(ratio >= 2/3){ msg = "这个正确率（"+r+"/"+t+"）说明这一档难度正合适，下一篇保持同难度。"; cls="ok-note"; }
-  else if(ratio <= 1/3){ msg = "正确率偏低（"+r+"/"+t+"），不怪你，是材料跳太快了——把这个分数发给 Muse，下一篇给你降一档。"; cls="hint"; }
-  else { msg = "正确率（"+r+"/"+t+"）在中间档：一半靠猜说明正在进步区，保持这个难度再练两篇看看。把分数发给 Muse 定下一档。"; cls="ok-note"; }
-  judge.innerHTML = '<div class="'+cls+'">'+msg+'</div>';
-  render();
-});
-
-/* ============ 生词 ============ */
-document.getElementById("wordAdd").addEventListener("click", function(){
-  var w = document.getElementById("wordInput").value.trim();
-  var s = document.getElementById("wordSentence").value.trim();
-  if(!w){ alert("先填单词。"); return; }
-  state.words.push({word:w, sentence:s, known:false, box:1, due:todayStr()});
-  save();
-  document.getElementById("wordInput").value = "";
-  document.getElementById("wordSentence").value = "";
-  render();
-});
-document.getElementById("wordList").addEventListener("click", function(e){
-  var b = e.target.closest("button"); if(!b) return;
-  var i = parseInt(b.getAttribute("data-i"),10);
-  if(b.getAttribute("data-act")==="toggle"){
-    var w = state.words[i];
-    w.known = !w.known;
-    if(!w.known){ w.box = 1; w.due = todayStr(); }
-  }
-  if(b.getAttribute("data-act")==="del"){ state.words.splice(i,1); }
-  save(); render();
-});
-
-/* ============ 复习卡（Leitner） ============ */
-var queue = [], qIdx = 0;
-function buildQueue(){
-  queue = [];
-  for(var i=0;i<state.words.length;i++){ if(wordDue(state.words[i])) queue.push(i); }
-  qIdx = 0;
-}
-function renderFlash(){
-  var card = document.getElementById("flashCard");
-  card.classList.remove("show");
-  var info = document.getElementById("dueInfo");
-  if(!state.words.length){
-    info.textContent = "";
-    document.getElementById("flashWord").textContent = "暂无生词";
-    document.getElementById("flashSent").textContent = "";
-    return;
-  }
-  if(!queue.length){
-    info.textContent = "今天到期的词都复习完了 ✔ 没到期的到日子会自动出现在这里。";
-    document.getElementById("flashWord").textContent = "今日复习完成 🎉";
-    document.getElementById("flashSent").textContent = "";
-    return;
-  }
-  if(qIdx >= queue.length) qIdx = 0;
-  info.textContent = "今日待复习 " + queue.length + " 个（第 " + (qIdx+1) + " 个）";
-  var w = state.words[queue[qIdx]];
-  document.getElementById("flashWord").textContent = w.word;
-  document.getElementById("flashSent").textContent = w.sentence || "（没记原句）";
-}
-document.getElementById("flashCard").addEventListener("click", function(){ this.classList.toggle("show"); });
-document.getElementById("flashYes").addEventListener("click", function(){
-  if(!queue.length) return;
-  var w = state.words[queue[qIdx]];
-  if(w.box >= 3){ w.known = true; }
-  else { w.box = w.box + 1; w.due = addDays(new Date(), BOX_INTERVAL[w.box]); }
-  save(); render();
-});
-document.getElementById("flashNo").addEventListener("click", function(){
-  if(!queue.length) return;
-  var w = state.words[queue[qIdx]];
-  w.box = 1; w.due = todayStr();
-  save();
-  /* 不认识的词挪到队尾，今天再考一次 */
-  var cur = queue[qIdx];
-  queue.splice(qIdx,1); queue.push(cur);
-  if(qIdx >= queue.length) qIdx = 0;
-  renderFlash();
-  document.getElementById("dueInfo").textContent = "今日待复习 " + queue.length + " 个（第 " + (qIdx+1) + " 个）";
-});
-
-/* ============ 课程表：加/删讲座 ============ */
-document.getElementById("lessonAdd").addEventListener("click", function(){
-  var t = document.getElementById("newTitle").value.trim();
-  var tp = document.getElementById("newTopic").value.trim();
-  var u = document.getElementById("newUrl").value.trim();
-  if(!t || !u){ alert("标题和链接必填，主题可空。"); return; }
-  if(u.indexOf("http") !== 0){ alert("链接要以 http 开头，检查一下有没有粘全。"); return; }
-  var list = allLessons();
-  var nextDay = list.length ? list[list.length-1].day + 1 : 1;
-  var embed = "", transcript = "";
-  var mm = u.match(/ted\.com\/talks\/([a-z0-9_]+)/i);
-  if(mm){ embed = "https://embed.ted.com/talks/" + mm[1]; transcript = "https://www.ted.com/talks/" + mm[1] + "/transcript"; }
-  state.customLessons.push({day:nextDay, title:t, topic:tp || "讲座", url:u, embed:embed, transcript:transcript, note:"", quiz:[], custom:true});
-  save();
-  document.getElementById("newTitle").value = "";
-  document.getElementById("newTopic").value = "";
-  document.getElementById("newUrl").value = "";
-  render();
-  alert("已加为 Day " + nextDay + "。练完前面的，它会自动成为「今日讲座」。");
-});
-document.getElementById("lessonList").addEventListener("click", function(e){
-  var b = e.target.closest("button[data-del-lesson]"); if(!b) return;
-  var day = parseInt(b.getAttribute("data-del-lesson"),10);
-  if(!confirm("删掉 Day " + day + " 这篇自加讲座？")) return;
-  state.customLessons = state.customLessons.filter(function(L){ return L.day !== day; });
-  save(); render();
 });
 
 /* ============ 备份 / 导入 / Anki ============ */
@@ -686,6 +898,7 @@ document.getElementById("importFile").addEventListener("change", function(){
       if(!confirm("导入会覆盖当前这台设备上的全部记录，确定？")) return;
       localStorage.setItem(KEY, JSON.stringify(s));
       state = load();
+      loadedDay = null;
       save(); render();
       document.getElementById("backupMsg").innerHTML = '<div class="ok-note">导入成功，记录已恢复。</div>';
     }catch(e){
@@ -704,6 +917,7 @@ if("serviceWorker" in navigator){
 }
 
 drawTimer();
+drawOffset();
 render();
 </script>
 </body>
