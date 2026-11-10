@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>英语每日 30 分钟 · 托福精听</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1420">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
   :root{
     --bg:#0f1420; --card:#1a2233; --card2:#222d44; --line:#2e3a55;
@@ -23,8 +26,10 @@
   .btn{display:inline-block; border:none; border-radius:12px; padding:12px 16px; font-size:15px;
     background:var(--acc); color:#fff; text-decoration:none; text-align:center; cursor:pointer; font-weight:600;}
   .btn.green{background:var(--acc2); color:#06281b;}
+  .btn.red{background:var(--bad); color:#fff;}
   .btn.ghost{background:var(--card2); color:var(--txt); border:1px solid var(--line); font-weight:500;}
   .btn.small{padding:8px 12px; font-size:13px; border-radius:10px;}
+  .btn.on{outline:2px solid var(--acc); outline-offset:1px;}
   .btn:disabled{opacity:.45;}
   .stat{display:flex; gap:10px;}
   .stat .box{flex:1; background:var(--card2); border-radius:12px; padding:10px; text-align:center;}
@@ -56,6 +61,7 @@
   .word .s{color:var(--dim); font-size:13px; margin-top:2px; line-height:1.5;}
   .tag{display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; background:var(--card2); color:var(--dim); margin-left:8px; vertical-align:2px;}
   .tag.ok{background:rgba(55,217,154,.15); color:var(--acc2);}
+  .tag.due{background:rgba(255,184,77,.15); color:var(--warn);}
   .hint{font-size:13px; color:var(--warn); margin-top:8px; line-height:1.6;}
   .ok-note{font-size:13px; color:var(--acc2); margin-top:8px; line-height:1.6;}
   .lesson{display:flex; gap:10px; align-items:center; padding:11px 0; border-top:1px solid var(--line);}
@@ -68,6 +74,12 @@
   .flash .fw{font-size:24px; font-weight:800;}
   .flash .fs{color:var(--dim); font-size:14px; margin-top:8px; line-height:1.6; display:none;}
   .flash.show .fs{display:block;}
+  audio{width:100%; margin:4px 0 10px;}
+  .cal{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:6px;}
+  .cal .d{aspect-ratio:1; border-radius:8px; background:var(--card2); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--dim);}
+  .cal .d.on{background:var(--acc2); color:#06281b; font-weight:700;}
+  .cal .d.today{outline:2px solid var(--acc); outline-offset:1px;}
+  .mini{font-size:12px; color:var(--dim); line-height:1.6;}
 </style>
 </head>
 <body>
@@ -81,6 +93,9 @@
     <div class="box"><div class="num" id="doneNum">0</div><div class="lab">已完成讲座</div></div>
     <div class="box"><div class="num" id="wordNum">0</div><div class="lab">生词本</div></div>
   </div>
+  <div class="cal" id="calGrid"></div>
+  <div class="mini" style="margin-top:6px;">最近 4 周打卡（绿 = 当天练过）</div>
+  <div id="chartWrap" style="margin-top:12px;"></div>
 </div>
 
 <div class="card">
@@ -89,6 +104,34 @@
   <div class="lecture-meta" id="todayMeta">—</div>
   <a class="btn grow" id="todayLink" href="#" target="_blank" rel="noopener" style="display:block;">打开讲座（考满分）</a>
   <div class="hint" id="catchupHint" style="display:none;"></div>
+</div>
+
+<div class="card">
+  <h2>精听播放器（自备音频）</h2>
+  <div class="mini" style="margin-bottom:8px;">讲座原站的音频拿不进来；如果你有这篇的音频文件或直链，在这里放：支持变速、AB 循环逐句抠。</div>
+  <audio id="player" controls preload="metadata"></audio>
+  <div class="row">
+    <input type="text" id="audioUrl" placeholder="粘贴音频直链（mp3 地址）">
+    <button class="btn small" id="audioLoad">加载</button>
+  </div>
+  <div class="row" style="margin-top:8px;">
+    <label class="btn ghost small grow" style="text-align:center;">选本地音频文件<input type="file" id="audioFile" accept="audio/*" style="display:none;"></label>
+  </div>
+  <div class="row" style="margin-top:10px;">
+    <button class="btn ghost small grow" id="back5">⏪ 5 秒</button>
+    <button class="btn ghost small grow" id="fwd5">5 秒 ⏩</button>
+  </div>
+  <div class="row" style="margin-top:8px;">
+    <button class="btn ghost small grow rateBtn" data-rate="0.75">0.75×</button>
+    <button class="btn ghost small grow rateBtn on" data-rate="1">1×</button>
+    <button class="btn ghost small grow rateBtn" data-rate="1.25">1.25×</button>
+  </div>
+  <div class="row" style="margin-top:8px;">
+    <button class="btn ghost small grow" id="setA">设 A 点</button>
+    <button class="btn ghost small grow" id="setB">设 B 点</button>
+    <button class="btn ghost small grow" id="clearAB">清除 AB</button>
+  </div>
+  <div class="mini" id="abInfo" style="margin-top:6px;">AB 未设置。在句子开头点「设 A 点」、结尾点「设 B 点」，就会自动循环这一句。</div>
 </div>
 
 <div class="card">
@@ -126,34 +169,58 @@
 </div>
 
 <div class="card">
-  <h2>生词复习（点卡片看原句）</h2>
+  <h2>生词复习（间隔重复 · 点卡片看原句）</h2>
+  <div class="mini" id="dueInfo" style="margin-bottom:8px;"></div>
   <div class="flash" id="flashCard">
     <div class="fw" id="flashWord">暂无生词</div>
     <div class="fs" id="flashSent"></div>
   </div>
   <div class="row" style="margin-top:10px;">
-    <button class="btn ghost grow" id="flashPrev">← 上一个</button>
-    <button class="btn ghost grow" id="flashNext">下一个 →</button>
+    <button class="btn red grow" id="flashNo">不认识</button>
+    <button class="btn green grow" id="flashYes">认识</button>
   </div>
+  <div class="mini" style="margin-top:6px;">先想意思，再点卡片对原句，最后点认识/不认识。认识会升盒、隔更久再出现；不认识回 1 盒、今天还会再考你。</div>
 </div>
 
 <div class="card">
   <h2>课程表</h2>
   <div id="lessonList"></div>
+  <div style="border-top:1px solid var(--line); margin-top:10px; padding-top:12px;">
+    <div class="mini" style="margin-bottom:8px;">自己加一篇新讲座（比如 Muse 发你的新链接）：</div>
+    <input type="text" id="newTitle" placeholder="标题，如 河流与三角洲">
+    <input type="text" id="newTopic" placeholder="主题，如 地质学 · 讲座" style="margin-top:8px;">
+    <input type="text" id="newUrl" placeholder="链接 https://…" style="margin-top:8px;">
+    <button class="btn grow" id="lessonAdd" style="width:100%; margin-top:10px;">加进课程表（自动排 Day 序号）</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>数据备份</h2>
+  <div class="mini" style="margin-bottom:10px;">数据只存在这台设备的浏览器里。换手机或清缓存前，先导出一份存好；换新设备后导入就能接上。</div>
+  <div class="row">
+    <button class="btn ghost grow" id="exportBtn">导出备份（JSON）</button>
+    <label class="btn ghost grow" style="text-align:center;">导入备份<input type="file" id="importFile" accept=".json,application/json" style="display:none;"></label>
+  </div>
+  <div class="row" style="margin-top:8px;">
+    <button class="btn ghost grow" id="ankiBtn">导出生词给 Anki（txt）</button>
+  </div>
+  <div id="backupMsg"></div>
 </div>
 
 <div class="foot">
   数据只存在这台设备的浏览器里，不上传任何服务器。<br>
-  换手机或清缓存会丢记录，重要的分数可以截图留底。
+  记得偶尔用上面的「导出备份」存一份到微信/文件里。
 </div>
 
 <script>
 "use strict";
 /* ============ 数据 ============ */
-var LESSONS = [
+var BUILTIN = [
   {day:1, title:"两栖动物与环境", topic:"环境科学 · 讲座", url:"https://toefl.kmf.com/detail/listen/623r7j.html"},
   {day:2, title:"北极熊与营养级联", topic:"生态学 · 讲座", url:"https://toefl.kmf.com/detail/listen/12cthj.html"},
-  {day:3, title:"冰芯与历史气候", topic:"地球科学 · 讲座", url:"https://toefl.kmf.com/detail/listen/02de4j.html"}
+  {day:3, title:"冰芯与历史气候", topic:"地球科学 · 讲座", url:"https://toefl.kmf.com/detail/listen/02de4j.html"},
+  {day:4, title:"虎鲸与行为物种形成", topic:"动物行为 · 讲座", url:"https://toefl.kmf.com/detail/listen/82ci0j.html"},
+  {day:5, title:"金星上的盾状火山", topic:"天文学 · 讲座", url:"https://toefl.kmf.com/detail/listen/51ghsj.html"}
 ];
 var PHASES = [
   {min:15, name:"精听", desc:"先盲听一遍抓大意；再一句一句听，听不出的看原文那句、倒回去重听；最后做题。"},
@@ -161,20 +228,43 @@ var PHASES = [
   {min:5,  name:"跟读", desc:"挑讲座里 30 秒到 1 分钟，音频放一句、你跟一句，模仿语调和连读。"}
 ];
 var KEY = "toeflDaily.v1";
+var BOX_INTERVAL = {1:1, 2:2, 3:4}; /* 盒号 → 下次出现间隔（天） */
 var state = load();
 function load(){
-  try{ var s = JSON.parse(localStorage.getItem(KEY)); if(s) return s; }catch(e){}
-  return {done:{}, scores:[], words:[], lastDate:"", streak:0};
+  var s = null;
+  try{ s = JSON.parse(localStorage.getItem(KEY)); }catch(e){}
+  if(!s || typeof s !== "object") s = {done:{}, scores:[], words:[], lastDate:"", streak:0};
+  if(!s.done) s.done = {};
+  if(!s.scores) s.scores = [];
+  if(!s.words) s.words = [];
+  if(!s.customLessons) s.customLessons = [];
+  /* 旧数据迁移：生词补 Leitner 字段 */
+  for(var i=0;i<s.words.length;i++){
+    var w = s.words[i];
+    if(typeof w.box !== "number") w.box = 1;
+    if(typeof w.due !== "string") w.due = "";
+    if(typeof w.known !== "boolean") w.known = false;
+  }
+  return s;
 }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
-function todayStr(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
-function yesterdayStr(){ var d=new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function dstr(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function todayStr(){ return dstr(new Date()); }
+function addDays(base, n){ var d = new Date(base.getFullYear(), base.getMonth(), base.getDate()+n); return dstr(d); }
+function yesterdayStr(){ return addDays(new Date(), -1); }
 
-/* 当前应做的讲座 = 第一个未完成的 */
+function allLessons(){
+  var list = BUILTIN.slice();
+  for(var i=0;i<state.customLessons.length;i++) list.push(state.customLessons[i]);
+  list.sort(function(a,b){ return a.day-b.day; });
+  return list;
+}
 function currentLesson(){
-  for(var i=0;i<LESSONS.length;i++){ if(!state.done[LESSONS[i].day]) return LESSONS[i]; }
+  var list = allLessons();
+  for(var i=0;i<list.length;i++){ if(!state.done[list[i].day]) return list[i]; }
   return null;
 }
+function wordDue(w){ return !w.known && (!w.due || w.due <= todayStr()); }
 
 /* ============ 渲染 ============ */
 function render(){
@@ -182,6 +272,9 @@ function render(){
   document.getElementById("streakNum").textContent = state.streak;
   document.getElementById("doneNum").textContent = doneCount;
   document.getElementById("wordNum").textContent = state.words.length;
+
+  renderCal();
+  renderChart();
 
   var cur = currentLesson();
   if(cur){
@@ -196,11 +289,11 @@ function render(){
     } else { hint.style.display = "none"; }
   } else {
     document.getElementById("todayTitle").textContent = "已排的讲座都练完了 🎉";
-    document.getElementById("todayMeta").textContent = "跟 Muse 说一声，马上给你排 Day 4 往后的。";
+    document.getElementById("todayMeta").textContent = "可以在下面课程表里自己加新讲座，或跟 Muse 要下一篇。";
     document.getElementById("todayLink").style.display = "none";
+    document.getElementById("catchupHint").style.display = "none";
   }
 
-  /* 阶段列表 */
   var ph = "";
   for(var i=0;i<PHASES.length;i++){
     var cls = "phase" + (i===curPhase ? " active" : "") + (i<curPhase ? " done" : "");
@@ -211,7 +304,6 @@ function render(){
   document.getElementById("phases").innerHTML = ph;
   document.getElementById("timerLab").textContent = "第 " + (curPhase+1) + " 步 · " + PHASES[curPhase].name;
 
-  /* 分数历史 */
   var h = "";
   var recent = state.scores.slice(-5).reverse();
   for(var j=0;j<recent.length;j++){
@@ -220,51 +312,94 @@ function render(){
   }
   document.getElementById("scoreHist").innerHTML = h || "还没有记录。练完第一篇，把分数填进来。";
 
-  /* 生词列表 */
   var wl = "";
   for(var k=state.words.length-1;k>=0;k--){
     var w = state.words[k];
-    wl += '<div class="word"><span class="w">'+esc(w.word)+'</span>'
-        + '<span class="tag'+(w.known?" ok":"")+'">'+(w.known?"已掌握":"待复习")+'</span>'
+    var tag = w.known ? '<span class="tag ok">已掌握</span>'
+            : (wordDue(w) ? '<span class="tag due">待复习 · '+w.box+' 盒</span>' : '<span class="tag">'+w.box+' 盒 · '+w.due.slice(5)+' 再练</span>');
+    wl += '<div class="word"><span class="w">'+esc(w.word)+'</span>' + tag
         + '<div class="s">'+esc(w.sentence||"")+'</div>'
         + '<div style="margin-top:6px;"><button class="btn ghost small" data-act="toggle" data-i="'+k+'">'+(w.known?"标回待复习":"标记已掌握")+'</button> '
         + '<button class="btn ghost small" data-act="del" data-i="'+k+'">删除</button></div></div>';
   }
   document.getElementById("wordList").innerHTML = wl || '<div class="hist" style="margin-top:8px;">还是空的。今天精听时把没听出来的词加进来。</div>';
 
-  /* 课程表 */
+  var list = allLessons();
   var ll = "";
-  for(var m=0;m<LESSONS.length;m++){
-    var L = LESSONS[m];
+  for(var m=0;m<list.length;m++){
+    var L = list[m];
     var st = state.done[L.day] ? '<span class="tag ok">已完成</span>'
            : (cur && L.day===cur.day ? '<span class="tag">今天练这篇</span>' : '<span class="tag">待练</span>');
-    ll += '<div class="lesson"><div class="grow"><div class="lt">Day '+L.day+' · '+L.title+'</div>'
-        + '<div class="lm">'+L.topic+'</div></div>'+st
-        + ' <a class="btn ghost small" href="'+L.url+'" target="_blank" rel="noopener">打开</a></div>';
+    var del = L.custom ? ' <button class="btn ghost small" data-del-lesson="'+L.day+'">删</button>' : '';
+    ll += '<div class="lesson"><div class="grow"><div class="lt">Day '+L.day+' · '+esc(L.title)+'</div>'
+        + '<div class="lm">'+esc(L.topic)+'</div></div>'+st
+        + ' <a class="btn ghost small" href="'+esc(L.url)+'" target="_blank" rel="noopener">打开</a>'+del+'</div>';
   }
   document.getElementById("lessonList").innerHTML = ll;
 
+  buildQueue();
   renderFlash();
 }
-function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function esc(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
-/* ============ 计时器 ============ */
-var curPhase = 0, remainSec = PHASES[0].min*60, timerId = null, running = false;
-function fmt(s){ return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+function practicedDates(){
+  var set = {};
+  for(var d in state.done) set[state.done[d]] = true;
+  for(var i=0;i<state.scores.length;i++) set[state.scores[i].date] = true;
+  return set;
+}
+function renderCal(){
+  var set = practicedDates();
+  var html = "";
+  var start = new Date(); start.setDate(start.getDate() - 27);
+  for(var i=0;i<28;i++){
+    var d = new Date(start.getFullYear(), start.getMonth(), start.getDate()+i);
+    var ds = dstr(d);
+    html += '<div class="d'+(set[ds]?" on":"")+((ds===todayStr())?" today":"")+'">'+(d.getMonth()+1)+"/"+d.getDate()+'</div>';
+  }
+  document.getElementById("calGrid").innerHTML = html;
+}
+function renderChart(){
+  var wrap = document.getElementById("chartWrap");
+  var sc = state.scores.slice(-10);
+  if(sc.length < 1){ wrap.innerHTML = ""; return; }
+  var W = 320, H = 84, P = 8;
+  var pts = "";
+  for(var i=0;i<sc.length;i++){
+    var x = sc.length===1 ? W/2 : P + i*(W-2*P)/(sc.length-1);
+    var y = H - P - (sc[i].right/sc[i].total)*(H-2*P);
+    pts += x.toFixed(1)+","+y.toFixed(1)+" ";
+  }
+  var dots = "";
+  for(var j=0;j<sc.length;j++){
+    var x2 = sc.length===1 ? W/2 : P + j*(W-2*P)/(sc.length-1);
+    var y2 = H - P - (sc[j].right/sc[j].total)*(H-2*P);
+    dots += '<circle cx="'+x2.toFixed(1)+'" cy="'+y2.toFixed(1)+'" r="3.5" fill="#4da3ff"/>';
+  }
+  wrap.innerHTML = '<div class="mini" style="margin-bottom:4px;">最近 '+sc.length+' 篇正确率走势</div>'
+    + '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;">'
+    + '<polyline points="'+pts+'" fill="none" stroke="#4da3ff" stroke-width="2"/>'+dots+'</svg>';
+}
+
+/* ============ 计时器（时间戳版，切后台不漂移） ============ */
+var curPhase = 0, remainSec = PHASES[0].min*60, timerId = null, running = false, endAt = 0;
+function fmt(s){ return String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.max(s%60,0)).padStart(2,"0"); }
 function drawTimer(){ document.getElementById("timerText").textContent = fmt(Math.max(remainSec,0)); }
 function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } running=false; document.getElementById("timerBtn").textContent="开始"; }
+function tick(){
+  remainSec = Math.max(0, Math.round((endAt - Date.now())/1000));
+  drawTimer();
+  if(remainSec<=0){
+    stopTimer();
+    if(navigator.vibrate) navigator.vibrate([200,100,200]);
+    alert("这一段到时间了。点「这一步做完了」进入下一步。");
+  }
+}
 document.getElementById("timerBtn").addEventListener("click", function(){
-  if(running){ stopTimer(); return; }
+  if(running){ remainSec = Math.max(0, Math.round((endAt - Date.now())/1000)); stopTimer(); drawTimer(); return; }
   running = true; this.textContent = "暂停";
-  timerId = setInterval(function(){
-    remainSec--;
-    drawTimer();
-    if(remainSec<=0){
-      stopTimer();
-      if(navigator.vibrate) navigator.vibrate([200,100,200]);
-      alert("这一段到时间了。点「这一步做完了」进入下一步。");
-    }
-  }, 1000);
+  endAt = Date.now() + remainSec*1000;
+  timerId = setInterval(tick, 250);
 });
 document.getElementById("timerReset").addEventListener("click", function(){
   stopTimer(); remainSec = PHASES[curPhase].min*60; drawTimer();
@@ -275,6 +410,40 @@ document.getElementById("phaseDone").addEventListener("click", function(){
   else { curPhase = 0; alert("三步都走完了！去上面记录今天的做题分数，就算完成今天。"); }
   remainSec = PHASES[curPhase].min*60; drawTimer(); render();
 });
+document.addEventListener("visibilitychange", function(){ if(running) tick(); });
+
+/* ============ 音频播放器 ============ */
+var player = document.getElementById("player");
+var abA = null, abB = null;
+function abShow(){
+  var el = document.getElementById("abInfo");
+  if(abA===null && abB===null){ el.textContent = "AB 未设置。在句子开头点「设 A 点」、结尾点「设 B 点」，就会自动循环这一句。"; return; }
+  el.textContent = "AB 循环：" + (abA===null?"—":abA.toFixed(1)+"s") + " → " + (abB===null?"—（还没设 B 点）":abB.toFixed(1)+"s");
+}
+document.getElementById("audioLoad").addEventListener("click", function(){
+  var u = document.getElementById("audioUrl").value.trim();
+  if(!u){ alert("先粘贴音频直链。"); return; }
+  player.src = u; abA = abB = null; abShow();
+});
+document.getElementById("audioFile").addEventListener("change", function(){
+  if(this.files && this.files[0]){ player.src = URL.createObjectURL(this.files[0]); abA = abB = null; abShow(); }
+});
+document.getElementById("back5").addEventListener("click", function(){ player.currentTime = Math.max(0, player.currentTime - 5); });
+document.getElementById("fwd5").addEventListener("click", function(){ player.currentTime = Math.min(player.duration || 1e9, player.currentTime + 5); });
+var rateBtns = document.querySelectorAll(".rateBtn");
+for(var rb=0; rb<rateBtns.length; rb++){
+  rateBtns[rb].addEventListener("click", function(){
+    player.playbackRate = parseFloat(this.getAttribute("data-rate"));
+    for(var x=0;x<rateBtns.length;x++) rateBtns[x].classList.remove("on");
+    this.classList.add("on");
+  });
+}
+document.getElementById("setA").addEventListener("click", function(){ abA = player.currentTime; if(abB!==null && abB<=abA) abB = null; abShow(); });
+document.getElementById("setB").addEventListener("click", function(){ abB = player.currentTime; if(abA===null || abB<=abA){ alert("B 点要在 A 点之后。先在更早的位置设 A 点。"); abB = null; } abShow(); });
+document.getElementById("clearAB").addEventListener("click", function(){ abA = abB = null; abShow(); });
+player.addEventListener("timeupdate", function(){
+  if(abA!==null && abB!==null && player.currentTime >= abB){ player.currentTime = abA; }
+});
 
 /* ============ 分数 ============ */
 document.getElementById("scoreSave").addEventListener("click", function(){
@@ -283,7 +452,7 @@ document.getElementById("scoreSave").addEventListener("click", function(){
   var judge = document.getElementById("scoreJudge");
   if(isNaN(r)||isNaN(t)||t<=0||r<0||r>t){ judge.innerHTML = '<div class="hint">先把分数填对：答对数不能大于总题数。</div>'; return; }
   var cur = currentLesson();
-  if(!cur){ judge.innerHTML = '<div class="hint">已排的讲座都完成了，先找 Muse 要新的再记分。</div>'; return; }
+  if(!cur){ judge.innerHTML = '<div class="hint">已排的讲座都完成了，先在课程表里加一篇新的再记分。</div>'; return; }
   state.scores.push({day:cur.day, right:r, total:t, date:todayStr()});
   state.done[cur.day] = todayStr();
   if(state.lastDate !== todayStr()){
@@ -305,40 +474,148 @@ document.getElementById("wordAdd").addEventListener("click", function(){
   var w = document.getElementById("wordInput").value.trim();
   var s = document.getElementById("wordSentence").value.trim();
   if(!w){ alert("先填单词。"); return; }
-  state.words.push({word:w, sentence:s, known:false});
+  state.words.push({word:w, sentence:s, known:false, box:1, due:todayStr()});
   save();
   document.getElementById("wordInput").value = "";
   document.getElementById("wordSentence").value = "";
-  flashIdx = state.words.length - 1;
   render();
 });
 document.getElementById("wordList").addEventListener("click", function(e){
   var b = e.target.closest("button"); if(!b) return;
   var i = parseInt(b.getAttribute("data-i"),10);
-  if(b.getAttribute("data-act")==="toggle"){ state.words[i].known = !state.words[i].known; }
+  if(b.getAttribute("data-act")==="toggle"){
+    var w = state.words[i];
+    w.known = !w.known;
+    if(!w.known){ w.box = 1; w.due = todayStr(); }
+  }
   if(b.getAttribute("data-act")==="del"){ state.words.splice(i,1); }
   save(); render();
 });
 
-/* ============ 复习卡 ============ */
-var flashIdx = 0;
+/* ============ 复习卡（Leitner） ============ */
+var queue = [], qIdx = 0;
+function buildQueue(){
+  queue = [];
+  for(var i=0;i<state.words.length;i++){ if(wordDue(state.words[i])) queue.push(i); }
+  qIdx = 0;
+}
 function renderFlash(){
   var card = document.getElementById("flashCard");
   card.classList.remove("show");
+  var info = document.getElementById("dueInfo");
   if(!state.words.length){
+    info.textContent = "";
     document.getElementById("flashWord").textContent = "暂无生词";
     document.getElementById("flashSent").textContent = "";
     return;
   }
-  if(flashIdx >= state.words.length) flashIdx = 0;
-  if(flashIdx < 0) flashIdx = state.words.length - 1;
-  var w = state.words[flashIdx];
+  if(!queue.length){
+    info.textContent = "今天到期的词都复习完了 ✔ 没到期的到日子会自动出现在这里。";
+    document.getElementById("flashWord").textContent = "今日复习完成 🎉";
+    document.getElementById("flashSent").textContent = "";
+    return;
+  }
+  if(qIdx >= queue.length) qIdx = 0;
+  info.textContent = "今日待复习 " + queue.length + " 个（第 " + (qIdx+1) + " 个）";
+  var w = state.words[queue[qIdx]];
   document.getElementById("flashWord").textContent = w.word;
   document.getElementById("flashSent").textContent = w.sentence || "（没记原句）";
 }
 document.getElementById("flashCard").addEventListener("click", function(){ this.classList.toggle("show"); });
-document.getElementById("flashPrev").addEventListener("click", function(){ flashIdx--; renderFlash(); });
-document.getElementById("flashNext").addEventListener("click", function(){ flashIdx++; renderFlash(); });
+document.getElementById("flashYes").addEventListener("click", function(){
+  if(!queue.length) return;
+  var w = state.words[queue[qIdx]];
+  if(w.box >= 3){ w.known = true; }
+  else { w.box = w.box + 1; w.due = addDays(new Date(), BOX_INTERVAL[w.box]); }
+  save(); render();
+});
+document.getElementById("flashNo").addEventListener("click", function(){
+  if(!queue.length) return;
+  var w = state.words[queue[qIdx]];
+  w.box = 1; w.due = todayStr();
+  save();
+  /* 不认识的词挪到队尾，今天再考一次 */
+  var cur = queue[qIdx];
+  queue.splice(qIdx,1); queue.push(cur);
+  if(qIdx >= queue.length) qIdx = 0;
+  renderFlash();
+  document.getElementById("dueInfo").textContent = "今日待复习 " + queue.length + " 个（第 " + (qIdx+1) + " 个）";
+});
+
+/* ============ 课程表：加/删讲座 ============ */
+document.getElementById("lessonAdd").addEventListener("click", function(){
+  var t = document.getElementById("newTitle").value.trim();
+  var tp = document.getElementById("newTopic").value.trim();
+  var u = document.getElementById("newUrl").value.trim();
+  if(!t || !u){ alert("标题和链接必填，主题可空。"); return; }
+  if(u.indexOf("http") !== 0){ alert("链接要以 http 开头，检查一下有没有粘全。"); return; }
+  var list = allLessons();
+  var nextDay = list.length ? list[list.length-1].day + 1 : 1;
+  state.customLessons.push({day:nextDay, title:t, topic:tp || "讲座", url:u, custom:true});
+  save();
+  document.getElementById("newTitle").value = "";
+  document.getElementById("newTopic").value = "";
+  document.getElementById("newUrl").value = "";
+  render();
+  alert("已加为 Day " + nextDay + "。练完前面的，它会自动成为「今日讲座」。");
+});
+document.getElementById("lessonList").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-del-lesson]"); if(!b) return;
+  var day = parseInt(b.getAttribute("data-del-lesson"),10);
+  if(!confirm("删掉 Day " + day + " 这篇自加讲座？")) return;
+  state.customLessons = state.customLessons.filter(function(L){ return L.day !== day; });
+  save(); render();
+});
+
+/* ============ 备份 / 导入 / Anki ============ */
+function download(name, text, mime){
+  var blob = new Blob([text], {type: mime || "text/plain;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+document.getElementById("exportBtn").addEventListener("click", function(){
+  download("toefl-backup-" + todayStr() + ".json", JSON.stringify(state, null, 2), "application/json");
+  document.getElementById("backupMsg").innerHTML = '<div class="ok-note">备份已下载，存到微信收藏或手机文件里就行。</div>';
+});
+document.getElementById("ankiBtn").addEventListener("click", function(){
+  if(!state.words.length){ alert("生词本还是空的。"); return; }
+  var lines = [];
+  for(var i=0;i<state.words.length;i++){
+    lines.push(state.words[i].word + "\t" + (state.words[i].sentence || "").replace(/\t/g," ").replace(/\n/g," "));
+  }
+  download("toefl-words-anki.txt", lines.join("\n"));
+  document.getElementById("backupMsg").innerHTML = '<div class="ok-note">已导出 '+lines.length+' 个词。在 AnkiDroid 里「导入文件」选这个 txt，分隔符选制表符即可。</div>';
+});
+document.getElementById("importFile").addEventListener("change", function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var s = JSON.parse(reader.result);
+      if(!s || !s.done || !s.scores || !s.words) throw new Error("bad");
+      if(!confirm("导入会覆盖当前这台设备上的全部记录，确定？")) return;
+      localStorage.setItem(KEY, JSON.stringify(s));
+      state = load();
+      save(); render();
+      document.getElementById("backupMsg").innerHTML = '<div class="ok-note">导入成功，记录已恢复。</div>';
+    }catch(e){
+      alert("这个文件不是有效的备份 JSON，导入失败，现有记录没动。");
+    }
+  };
+  reader.readAsText(f);
+  this.value = "";
+});
+
+/* ============ PWA ============ */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  });
+}
 
 drawTimer();
 render();
