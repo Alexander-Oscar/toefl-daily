@@ -1,5 +1,5 @@
 /* toefl-daily service worker: network-first for same-origin (updates land immediately), cache as offline fallback. */
-var CACHE = "toefl-daily-v50";
+var CACHE = "toefl-daily-v51";
 var ASSETS = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 self.addEventListener("install", function (e) {
